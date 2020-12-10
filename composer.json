@@ -1,0 +1,65 @@
+{
+    "name": "sambat/nepali-calendar",
+    "description": "The all-in-one Nepali (Bikram Sambat) date & time package for Laravel: AD <-> BS conversion, Carbon-style immutable dates, Devanagari numerals, multi-language formatting, validation, Blade helpers and artisan tools.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "nepali",
+        "nepali date",
+        "bikram sambat",
+        "bs date",
+        "ad to bs",
+        "bs to ad",
+        "devanagari",
+        "nepali calendar",
+        "date converter",
+        "carbon"
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/contracts": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "nesbot/carbon": "^2.72|^3.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.20",
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "pestphp/pest-plugin-laravel": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sambat\\NepaliCalendar\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sambat\\NepaliCalendar\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sambat\\NepaliCalendar\\NepaliCalendarServiceProvider"
+            ],
+            "aliases": {
+                "NepaliDate": "Sambat\\NepaliCalendar\\Facades\\NepaliDate"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "pint": "vendor/bin/pint"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

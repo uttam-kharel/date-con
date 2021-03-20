@@ -1,0 +1,841 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sambat\NepaliCalendar;
+
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use DateTimeInterface;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
+use JsonSerializable;
+use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
+use Sambat\NepaliCalendar\Support\Config;
+use Sambat\NepaliCalendar\Support\Formatter;
+use Sambat\NepaliCalendar\Support\NumberConverter;
+use Sambat\NepaliCalendar\Support\Parser;
+use Stringable;
+
+/**
+ * An immutable Nepali (Bikram Sambat) date.
+ *
+ * Carbon-style fluent API: conversion, formatting with Devanagari numerals,
+ * arithmetic, diffs, periods, comparisons and calendar grids. The object
+ * always knows its equivalent Gregorian instant (->ad()).
+ */
+final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringable
+{
+    private readonly int $year;
+
+    private readonly int $month;
+
+    private readonly int $day;
+
+    /** Equivalent Gregorian instant (date + optional wall time). */
+    private readonly Carbon $ad;
+
+    public function __construct(int $year, int $month, int $day, ?CarbonInterface $time = null)
+    {
+        Calendar::assertValidBsDate($year, $month, $day);
+
+        $this->year = $year;
+        $this->month = $month;
+        $this->day = $day;
+
+        $ad = Calendar::bsToAd($year, $month, $day);
+
+        $this->ad = $time !== null
+            ? Carbon::instance($time)->setDate($ad['year'], $ad['month'], $ad['day'])
+            : Carbon::create($ad['year'], $ad['month'], $ad['day']);
+    }
+
+    /* ------------------------------------------------------------------
+     | Factories
+     | ------------------------------------------------------------------ */
+
+    /** The current moment, converted to BS. */
+    public static function now(): self
+    {
+        $now = Carbon::now();
+        $bs = Calendar::adToBs(
+            (int) $now->format('Y'),
+            (int) $now->format('n'),
+            (int) $now->format('j')
+        );
+
+        return new self($bs['year'], $bs['month'], $bs['day'], $now);
+    }
+
+    /** Today's BS date (time preserved, date-only semantics). */
+    public static function today(): self
+    {
+        return self::now();
+    }
+
+    /**
+     * Parse a value as a BS date. Accepts:
+     *  - "2081-11-28", "2081/11/28", "2081.11.28", "20811128", "2081-11-28 14:30"
+     *  - "2081 Falgun 28" / "2081-फागुन-28" (romanized or Devanagari names)
+     *  - Devanagari numerals ("२०८१-११-०५")
+     *  - arrays / Carbon / DateTime / timestamps (timestamps are AD instants)
+     */
+    public static function parse(mixed $value): self
+    {
+        return Parser::parse($value);
+    }
+
+    /** Build a BS date from explicit year, month and day. */
+    public static function fromBs(int $year, int $month, int $day, ?CarbonInterface $time = null): self
+    {
+        return new self($year, $month, $day, $time);
+    }
+
+    /**
+     * Build a BS date from a Gregorian value (Carbon, DateTime, "2025-02-17",
+     * timestamp or array).
+     */
+    public static function fromAd(mixed $value): self
+    {
+        if ($value instanceof CarbonInterface) {
+            return self::fromCarbon($value);
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return self::fromCarbon(Carbon::instance($value));
+        }
+
+        if (is_int($value)) {
+            return self::fromTimestamp($value);
+        }
+
+        if (is_array($value)) {
+            $year = $value['year'] ?? $value['y'] ?? $value[0] ?? null;
+            $month = $value['month'] ?? $value['m'] ?? $value[1] ?? null;
+            $day = $value['day'] ?? $value['d'] ?? $value[2] ?? null;
+
+            if ($year === null || $month === null || $day === null) {
+                throw InvalidNepaliDateException::forValue($value);
+            }
+
+            return self::fromCarbon(Carbon::create((int) $year, (int) $month, (int) $day));
+        }
+
+        if (is_string($value)) {
+            $carbon = Carbon::parse($value);
+
+            // Reject lenient overflow such as "2025-02-31" which Carbon would
+            // silently roll over to 2025-03-03.
+            $digits = preg_replace('/\D/', '', $value);
+            if ($digits !== null && strlen($digits) >= 8 && ! str_starts_with($carbon->format('Ymd'), substr($digits, 0, 8))) {
+                throw InvalidNepaliDateException::forValue($value);
+            }
+
+            return self::fromCarbon($carbon);
+        }
+
+        throw InvalidNepaliDateException::forValue($value);
+    }
+
+    public static function fromCarbon(CarbonInterface $carbon): self
+    {
+        $carbon = Carbon::instance($carbon);
+
+        $bs = Calendar::adToBs(
+            (int) $carbon->format('Y'),
+            (int) $carbon->format('n'),
+            (int) $carbon->format('j')
+        );
+
+        return new self($bs['year'], $bs['month'], $bs['day'], $carbon);
+    }
+
+    public static function fromTimestamp(int $timestamp): self
+    {
+        return self::fromCarbon(Carbon::createFromTimestamp($timestamp));
+    }
+
+    /**
+     * Build from an array. Accepts ['year' => 2081, 'month' => 11, 'day' => 28],
+     * [2081, 11, 28] or a toArray() result.
+     */
+    public static function fromArray(array $value): self
+    {
+        $year = $value['year'] ?? $value['y'] ?? ($value[0] ?? null);
+        $month = $value['month'] ?? $value['m'] ?? ($value[1] ?? null);
+        $day = $value['day'] ?? $value['d'] ?? ($value[2] ?? null);
+
+        if ($year === null || $month === null || $day === null) {
+            throw InvalidNepaliDateException::forValue($value);
+        }
+
+        return new self((int) $year, (int) $month, (int) $day);
+    }
+
+    /** Whether a value parses to a valid BS date. */
+    public static function isValid(mixed $value): bool
+    {
+        try {
+            self::parse($value);
+
+            return true;
+        } catch (InvalidNepaliDateException) {
+            return false;
+        }
+    }
+
+    public static function min(self ...$dates): self
+    {
+        return array_reduce($dates, fn (?self $carry, self $date) => $carry === null || $date->isBefore($carry) ? $date : $carry);
+    }
+
+    public static function max(self ...$dates): self
+    {
+        return array_reduce($dates, fn (?self $carry, self $date) => $carry === null || $date->isAfter($carry) ? $date : $carry);
+    }
+
+    public static function compare(self $a, self $b): int
+    {
+        return $a->compareTo($b);
+    }
+
+    /* ------------------------------------------------------------------
+     | Accessors
+     | ------------------------------------------------------------------ */
+
+    public function year(): int
+    {
+        return $this->year;
+    }
+
+    public function month(): int
+    {
+        return $this->month;
+    }
+
+    public function day(): int
+    {
+        return $this->day;
+    }
+
+    /** Quarter of the BS year, 1-4. */
+    public function quarter(): int
+    {
+        return intdiv($this->month - 1, 3) + 1;
+    }
+
+    /** Week day 1 (Sunday) .. 7 (Saturday) — the Nepali convention. */
+    public function weekDay(): int
+    {
+        return (int) $this->ad->format('w') + 1;
+    }
+
+    /** ISO week day 1 (Monday) .. 7 (Sunday). */
+    public function weekDayIso(): int
+    {
+        return (int) $this->ad->format('N');
+    }
+
+    public function weekDayName(?string $language = null): string
+    {
+        return Formatter::weekDayNamePublic($this, $language);
+    }
+
+    public function weekDayShort(?string $language = null): string
+    {
+        return Formatter::weekDayShortPublic($this, $language);
+    }
+
+    public function monthName(?string $language = null): string
+    {
+        return Formatter::monthNamePublic($this, $language);
+    }
+
+    public function monthShortName(?string $language = null): string
+    {
+        return Formatter::monthShortNamePublic($this, $language);
+    }
+
+    /** Day of the BS year, 1-based. */
+    public function dayOfYear(): int
+    {
+        return Calendar::dayOfYear($this->year, $this->month, $this->day);
+    }
+
+    /** Week number within the BS year, 1-based (approximation of ISO style). */
+    public function weekOfYear(): int
+    {
+        return intdiv($this->dayOfYear() - 1, 7) + 1;
+    }
+
+    public function daysInMonth(): int
+    {
+        return Calendar::daysInBsMonth($this->year, $this->month);
+    }
+
+    public function daysInYear(): int
+    {
+        return Calendar::daysInBsYear($this->year);
+    }
+
+    /** A BS year is "leap" when it contains 366 days. */
+    public function isLeapYear(): bool
+    {
+        return Calendar::isBsLeapYear($this->year);
+    }
+
+    /** The equivalent Gregorian instant (Carbon). */
+    public function ad(): Carbon
+    {
+        return $this->ad->copy();
+    }
+
+    public function timestamp(): int
+    {
+        return $this->ad->getTimestamp();
+    }
+
+    /* ------------------------------------------------------------------
+     | Formatting
+     | ------------------------------------------------------------------ */
+
+    public function format(string $format, ?string $language = null, ?bool $devanagariNumerals = null): string
+    {
+        return Formatter::format($this, $format, $language, $devanagariNumerals);
+    }
+
+    /** Format using the Gregorian calendar (delegates to Carbon). */
+    public function formatAd(string $format): string
+    {
+        return $this->ad->format($format);
+    }
+
+    public function toDateString(string $separator = '-'): string
+    {
+        return sprintf('%04d%s%02d%s%02d', $this->year, $separator, $this->month, $separator, $this->day);
+    }
+
+    public function toEnglishNumerals(): string
+    {
+        return $this->toDateString();
+    }
+
+    public function toNepaliNumerals(): string
+    {
+        return NumberConverter::toNepali($this->toDateString());
+    }
+
+    public function __toString(): string
+    {
+        return $this->format((string) Config::get('nepali-calendar.default_format', 'Y-m-d'));
+    }
+
+    /* ------------------------------------------------------------------
+     | Arithmetic (immutable — every method returns a new instance)
+     | ------------------------------------------------------------------ */
+
+    public function addDays(int $days): self
+    {
+        $epoch = Calendar::toEpochDay($this->year, $this->month, $this->day) + $days;
+        $bs = Calendar::fromEpochDay($epoch);
+
+        return new self($bs['year'], $bs['month'], $bs['day'], $this->ad);
+    }
+
+    public function subDays(int $days): self
+    {
+        return $this->addDays(-$days);
+    }
+
+    public function addWeeks(int $weeks): self
+    {
+        return $this->addDays($weeks * 7);
+    }
+
+    public function subWeeks(int $weeks): self
+    {
+        return $this->addWeeks(-$weeks);
+    }
+
+    /**
+     * Add calendar months using BS-native arithmetic with overflow clamping:
+     * e.g. Magh 30 + 1 month becomes Falgun 29 when Falgun has 29 days.
+     */
+    public function addMonths(int $months): self
+    {
+        $total = $this->year * 12 + ($this->month - 1) + $months;
+
+        $year = (int) floor($total / 12);
+        $month = (($total % 12) + 12) % 12 + 1;
+        $day = min($this->day, Calendar::daysInBsMonth($year, $month));
+
+        return new self($year, $month, $day, $this->ad);
+    }
+
+    public function subMonths(int $months): self
+    {
+        return $this->addMonths(-$months);
+    }
+
+    public function addYears(int $years): self
+    {
+        $year = $this->year + $years;
+        $day = min($this->day, Calendar::daysInBsMonth($year, $this->month));
+
+        return new self($year, $this->month, $day, $this->ad);
+    }
+
+    public function subYears(int $years): self
+    {
+        return $this->addYears(-$years);
+    }
+
+    public function addDay(): self
+    {
+        return $this->addDays(1);
+    }
+
+    public function subDay(): self
+    {
+        return $this->addDays(-1);
+    }
+
+    public function nextDay(): self
+    {
+        return $this->addDay();
+    }
+
+    public function previousDay(): self
+    {
+        return $this->subDay();
+    }
+
+    public function nextMonth(): self
+    {
+        return $this->addMonths(1);
+    }
+
+    public function previousMonth(): self
+    {
+        return $this->addMonths(-1);
+    }
+
+    public function nextYear(): self
+    {
+        return $this->addYears(1);
+    }
+
+    public function previousYear(): self
+    {
+        return $this->addYears(-1);
+    }
+
+    /* ------------------------------------------------------------------
+     | Periods
+     | ------------------------------------------------------------------ */
+
+    public function startOfMonth(): self
+    {
+        return new self($this->year, $this->month, 1, $this->ad);
+    }
+
+    public function endOfMonth(): self
+    {
+        return new self($this->year, $this->month, $this->daysInMonth(), $this->ad);
+    }
+
+    public function startOfYear(): self
+    {
+        return new self($this->year, 1, 1, $this->ad);
+    }
+
+    public function endOfYear(): self
+    {
+        return new self($this->year, 12, Calendar::daysInBsMonth($this->year, 12), $this->ad);
+    }
+
+    public function startOfQuarter(): self
+    {
+        $month = ($this->quarter() - 1) * 3 + 1;
+
+        return new self($this->year, $month, 1, $this->ad);
+    }
+
+    public function endOfQuarter(): self
+    {
+        $month = $this->quarter() * 3;
+
+        return new self($this->year, $month, Calendar::daysInBsMonth($this->year, $month), $this->ad);
+    }
+
+    public function startOfWeek(?string $weekStartsOn = null): self
+    {
+        $target = strtolower($weekStartsOn ?? (string) Config::get('nepali-calendar.week_starts_on', 'sunday')) === 'monday' ? 2 : 1;
+
+        return $this->subDays(($this->weekDay() - $target + 7) % 7);
+    }
+
+    public function endOfWeek(?string $weekStartsOn = null): self
+    {
+        return $this->startOfWeek($weekStartsOn)->addDays(6);
+    }
+
+    public function firstOfMonth(): self
+    {
+        return $this->startOfMonth();
+    }
+
+    public function lastOfMonth(): self
+    {
+        return $this->endOfMonth();
+    }
+
+    /* ------------------------------------------------------------------
+     | Diffs
+     | ------------------------------------------------------------------ */
+
+    public function diffInDays(?self $other = null, bool $absolute = true): int
+    {
+        $other ??= self::now();
+
+        $diff = Calendar::toEpochDay($other->year, $other->month, $other->day)
+            - Calendar::toEpochDay($this->year, $this->month, $this->day);
+
+        return $absolute ? abs($diff) : $diff;
+    }
+
+    public function diffInWeeks(?self $other = null, bool $absolute = true): int
+    {
+        $diff = $this->diffInDays($other, $absolute);
+
+        return (int) floor($diff / 7);
+    }
+
+    public function diffInMonths(?self $other = null, bool $absolute = true): int
+    {
+        $other ??= self::now();
+
+        $diff = ($other->year - $this->year) * 12 + ($other->month - $this->month);
+
+        if ($other->day < $this->day) {
+            $diff--;
+        }
+
+        return $absolute ? abs($diff) : $diff;
+    }
+
+    public function diffInYears(?self $other = null, bool $absolute = true): int
+    {
+        $other ??= self::now();
+
+        $diff = $other->year - $this->year;
+
+        if ($other->month < $this->month || ($other->month === $this->month && $other->day < $this->day)) {
+            $diff--;
+        }
+
+        return $absolute ? abs($diff) : $diff;
+    }
+
+    /** Full years from this date (a birth date) until now. */
+    public function age(): int
+    {
+        return $this->diffInYears(self::now(), absolute: false);
+    }
+
+    /**
+     * Human friendly description of the gap between this date and $other
+     * (default: now). Uses Nepali by default, English on request.
+     */
+    public function diffForHumans(?self $other = null, ?string $language = null): string
+    {
+        $other ??= self::now();
+        $language = $language ?? (string) Config::get('nepali-calendar.language', 'nepali');
+
+        $days = $this->diffInDays($other, absolute: false);
+        $nepali = $language === 'nepali';
+
+        if ($days === 0) {
+            return $nepali ? 'अहिले' : 'just now';
+        }
+
+        $past = $days > 0; // this date is behind $other
+
+        if (abs($days) === 1) {
+            return match (true) {
+                $nepali && $past => 'हिजो',
+                $nepali => 'भोलि',
+                $past => 'yesterday',
+                default => 'tomorrow',
+            };
+        }
+
+        if (abs($days) < 30) {
+            return $nepali
+                ? NumberConverter::toNepali(abs($days)).' दिन '.($past ? 'अघि' : 'पछि')
+                : abs($days).' days '.($past ? 'ago' : 'from now');
+        }
+
+        $months = $this->diffInMonths($other, absolute: true);
+
+        if ($months < 12) {
+            return $nepali
+                ? NumberConverter::toNepali($months).' महिना '.($past ? 'अघि' : 'पछि')
+                : $months.' '.($months === 1 ? 'month' : 'months').' '.($past ? 'ago' : 'from now');
+        }
+
+        $years = $this->diffInYears($other, absolute: true);
+
+        return $nepali
+            ? NumberConverter::toNepali($years).' वर्ष '.($past ? 'अघि' : 'पछि')
+            : $years.' '.($years === 1 ? 'year' : 'years').' '.($past ? 'ago' : 'from now');
+    }
+
+    /* ------------------------------------------------------------------
+     | Comparison
+     | ------------------------------------------------------------------ */
+
+    public function compareTo(self $other): int
+    {
+        return Calendar::toEpochDay($this->year, $this->month, $this->day)
+            <=> Calendar::toEpochDay($other->year, $other->month, $other->day);
+    }
+
+    public function equals(mixed $other): bool
+    {
+        if (! $other instanceof self) {
+            try {
+                $other = self::parse($other);
+            } catch (InvalidNepaliDateException) {
+                return false;
+            }
+        }
+
+        return $this->isSameDay($other);
+    }
+
+    public function isSameDay(self $other): bool
+    {
+        return $this->year === $other->year
+            && $this->month === $other->month
+            && $this->day === $other->day;
+    }
+
+    public function isSameMonth(self $other): bool
+    {
+        return $this->year === $other->year && $this->month === $other->month;
+    }
+
+    public function isSameYear(self $other): bool
+    {
+        return $this->year === $other->year;
+    }
+
+    public function isBefore(mixed $other): bool
+    {
+        return $this->compareTo(self::coerce($other)) < 0;
+    }
+
+    public function isAfter(mixed $other): bool
+    {
+        return $this->compareTo(self::coerce($other)) > 0;
+    }
+
+    public function isBetween(self $start, self $end, bool $inclusive = true): bool
+    {
+        if ($start->isAfter($end)) {
+            [$start, $end] = [$end, $start];
+        }
+
+        $startCmp = $this->compareTo($start);
+        $endCmp = $this->compareTo($end);
+
+        if ($inclusive) {
+            return $startCmp >= 0 && $endCmp <= 0;
+        }
+
+        return $startCmp > 0 && $endCmp < 0;
+    }
+
+    public function isToday(): bool
+    {
+        return $this->isSameDay(self::now());
+    }
+
+    public function isPast(): bool
+    {
+        return $this->isBefore(self::now());
+    }
+
+    public function isFuture(): bool
+    {
+        return $this->isAfter(self::now());
+    }
+
+    public function isSaturday(): bool
+    {
+        return $this->weekDay() === 7;
+    }
+
+    public function isSunday(): bool
+    {
+        return $this->weekDay() === 1;
+    }
+
+    /** Nepali weekend is Saturday. */
+    public function isWeekend(): bool
+    {
+        return $this->isSaturday();
+    }
+
+    /* ------------------------------------------------------------------
+     | Calendar grid
+     | ------------------------------------------------------------------ */
+
+    /**
+     * Build a month grid for UI calendars: an array of weeks, each week an
+     * array of 7 slots (NepaliDate or null for days outside the month).
+     *
+     * @return array<int, array<int, self|null>>
+     */
+    public function calendar(?string $weekStartsOn = null): array
+    {
+        $first = new self($this->year, $this->month, 1);
+        $last = $this->endOfMonth();
+
+        $cursor = $first->startOfWeek($weekStartsOn);
+        $weeks = [];
+
+        while (true) {
+            $week = [];
+            for ($i = 0; $i < 7; $i++) {
+                $week[] = ($cursor->year === $this->year && $cursor->month === $this->month) ? $cursor : null;
+                $cursor = $cursor->addDays(1);
+            }
+            $weeks[] = $week;
+
+            if ($cursor->isAfter($last)) {
+                break;
+            }
+        }
+
+        return $weeks;
+    }
+
+    /* ------------------------------------------------------------------
+     | Immutable modifiers
+     | ------------------------------------------------------------------ */
+
+    public function withYear(int $year): self
+    {
+        return new self($year, $this->month, min($this->day, Calendar::daysInBsMonth($year, $this->month)), $this->ad);
+    }
+
+    public function withMonth(int $month): self
+    {
+        return new self($this->year, $month, min($this->day, Calendar::daysInBsMonth($this->year, $month)), $this->ad);
+    }
+
+    public function withDay(int $day): self
+    {
+        return new self($this->year, $this->month, $day, $this->ad);
+    }
+
+    public function copy(): self
+    {
+        return new self($this->year, $this->month, $this->day, $this->ad);
+    }
+
+    /* ------------------------------------------------------------------
+     | Serialization / magic
+     | ------------------------------------------------------------------ */
+
+    public function toArray(): array
+    {
+        return [
+            'year' => $this->year,
+            'month' => $this->month,
+            'day' => $this->day,
+            'num_week_day' => $this->weekDay(),
+            'iso_week_day' => $this->weekDayIso(),
+            'week_day' => $this->weekDayName(),
+            'week_day_short' => $this->weekDayShort(),
+            'month_name' => $this->monthName(),
+            'month_short' => $this->monthShortName(),
+            'day_of_year' => $this->dayOfYear(),
+            'days_in_month' => $this->daysInMonth(),
+            'days_in_year' => $this->daysInYear(),
+            'is_leap_year' => $this->isLeapYear(),
+            'ad_date' => $this->ad->format('Y-m-d'),
+            'ad_day_name' => $this->ad->format('l'),
+            'ad_month_name' => $this->ad->format('F'),
+            'english' => $this->toEnglishNumerals(),
+            'nepali' => $this->toNepaliNumerals(),
+        ];
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    public function toJson($options = 0): string
+    {
+        return json_encode($this->jsonSerialize(), $options);
+    }
+
+    public function __serialize(): array
+    {
+        return ['year' => $this->year, 'month' => $this->month, 'day' => $this->day];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->__construct(
+            (int) ($data['year'] ?? 2000),
+            (int) ($data['month'] ?? 1),
+            (int) ($data['day'] ?? 1)
+        );
+    }
+
+    public function __get(string $name): mixed
+    {
+        return match ($name) {
+            'year' => $this->year,
+            'month' => $this->month,
+            'day' => $this->day,
+            'quarter' => $this->quarter(),
+            'weekDay', 'week_day' => $this->weekDay(),
+            'weekDayIso', 'iso_week_day' => $this->weekDayIso(),
+            'weekDayName', 'week_day_name' => $this->weekDayName(),
+            'monthName', 'month_name' => $this->monthName(),
+            'dayOfYear', 'day_of_year' => $this->dayOfYear(),
+            'daysInMonth', 'days_in_month' => $this->daysInMonth(),
+            'daysInYear', 'days_in_year' => $this->daysInYear(),
+            'isLeapYear', 'is_leap_year' => $this->isLeapYear(),
+            'ad' => $this->ad(),
+            'timestamp' => $this->timestamp(),
+            default => throw new InvalidNepaliDateException("Undefined property [{$name}] on NepaliDate."),
+        };
+    }
+
+    public function __isset(string $name): bool
+    {
+        try {
+            $this->__get($name);
+
+            return true;
+        } catch (InvalidNepaliDateException) {
+            return false;
+        }
+    }
+
+    private static function coerce(mixed $other): self
+    {
+        if ($other instanceof self) {
+            return $other;
+        }
+
+        return self::parse($other);
+    }
+}

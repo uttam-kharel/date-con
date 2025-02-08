@@ -7,34 +7,51 @@ namespace Sambat\NepaliCalendar;
 use DateTimeImmutable;
 use DateTimeZone;
 use Sambat\NepaliCalendar\Constants\CalendarData;
+use Sambat\NepaliCalendar\Contracts\CalendarDataProvider;
 use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
 use Sambat\NepaliCalendar\Exceptions\NepaliDateOutOfRangeException;
+use Sambat\NepaliCalendar\Providers\ArrayCalendarDataProvider;
+use Sambat\NepaliCalendar\Providers\DatabaseCalendarDataProvider;
+use Sambat\NepaliCalendar\Support\Config;
 
 /**
  * The conversion engine. Both calendars are mapped onto a continuous
  * "epoch day" axis (day 0 == BS 2000-01-01 == AD 1943-04-14) using
  * precomputed cumulative day counts, so conversions are effectively O(1)
  * instead of the day-by-day loops used by most Nepali date packages.
+ *
+ * The underlying month-length data is supplied by a CalendarDataProvider:
+ * by default the built-in constants (driver = "algorithm"), or a database
+ * table when driver = "database". The provider can also be swapped at
+ * runtime with Calendar::setProvider().
  */
 final class Calendar
 {
+    /** Resolved data provider (config-driven, or set explicitly). */
+    private static ?CalendarDataProvider $provider = null;
+
+    /** Days in each month of every supported BS year. */
+    private static ?array $monthLengths = null;
+
     /** Days between BS 2000-01-01 and the start of each BS year. */
     private static ?array $yearStartDays = null;
 
     /** Total days in each BS year. */
     private static ?array $yearDays = null;
 
-    /** Total days in the whole supported range (BS 2000 .. BS 2099). */
+    /** Total days in the whole supported range. */
     private static ?int $totalDays = null;
 
     private static function build(): void
     {
-        if (self::$totalDays !== null) {
+        if (self::$monthLengths !== null) {
             return;
         }
 
+        $monthLengths = self::provider()->allMonthLengths();
+
         $yearDays = [];
-        foreach (CalendarData::NEPALI_YEARS as $year => $days) {
+        foreach ($monthLengths as $year => $days) {
             $yearDays[$year] = array_sum($days);
         }
 
@@ -45,9 +62,62 @@ final class Calendar
             $running += $days;
         }
 
+        self::$monthLengths = $monthLengths;
         self::$yearDays = $yearDays;
         self::$yearStartDays = $start;
         self::$totalDays = $running;
+    }
+
+    /**
+     * Resolve the active data provider (container binding > config driver).
+     */
+    public static function provider(): CalendarDataProvider
+    {
+        if (self::$provider === null) {
+            self::$provider = self::resolveProvider();
+        }
+
+        return self::$provider;
+    }
+
+    /**
+     * Replace the data provider at runtime (useful for tests and for apps
+     * that want a fully custom data source).
+     */
+    public static function setProvider(CalendarDataProvider $provider): void
+    {
+        self::$provider = $provider;
+        self::resetCache();
+    }
+
+    /**
+     * Forget the resolved provider so the next access re-resolves it from
+     * the container / config (e.g. after changing the driver at runtime).
+     */
+    public static function resetProvider(): void
+    {
+        self::$provider = null;
+        self::resetCache();
+    }
+
+    private static function resolveProvider(): CalendarDataProvider
+    {
+        if (function_exists('app') && app()->bound('nepali-calendar.provider')) {
+            return app('nepali-calendar.provider');
+        }
+
+        return match (strtolower((string) Config::get('nepali-calendar.driver', 'algorithm'))) {
+            'database', 'db' => new DatabaseCalendarDataProvider,
+            default => new ArrayCalendarDataProvider,
+        };
+    }
+
+    private static function resetCache(): void
+    {
+        self::$monthLengths = null;
+        self::$yearStartDays = null;
+        self::$yearDays = null;
+        self::$totalDays = null;
     }
 
     public static function daysInBsMonth(int $year, int $month): int
@@ -58,7 +128,7 @@ final class Calendar
             throw new InvalidNepaliDateException("Invalid month [{$month}]. Month must be between 1 and 12.");
         }
 
-        return CalendarData::NEPALI_YEARS[$year][$month - 1];
+        return self::$monthLengths[$year][$month - 1];
     }
 
     public static function daysInBsYear(int $year): int
@@ -76,15 +146,13 @@ final class Calendar
 
     public static function isValidBsDate(int $year, int $month, int $day): bool
     {
-        if ($year < CalendarData::BS_MIN_YEAR || $year > CalendarData::BS_MAX_YEAR) {
+        self::build();
+
+        if (! isset(self::$monthLengths[$year]) || $month < 1 || $month > 12) {
             return false;
         }
 
-        if ($month < 1 || $month > 12) {
-            return false;
-        }
-
-        return $day >= 1 && $day <= self::daysInBsMonth($year, $month);
+        return $day >= 1 && $day <= self::$monthLengths[$year][$month - 1];
     }
 
     public static function assertValidBsDate(int $year, int $month, int $day): void
@@ -103,7 +171,7 @@ final class Calendar
 
         $dayOfYear = $day;
         for ($m = 1; $m < $month; $m++) {
-            $dayOfYear += CalendarData::NEPALI_YEARS[$year][$m - 1];
+            $dayOfYear += self::$monthLengths[$year][$m - 1];
         }
 
         return $dayOfYear;
@@ -119,7 +187,7 @@ final class Calendar
 
         $epoch = self::$yearStartDays[$year];
         for ($m = 1; $m < $month; $m++) {
-            $epoch += CalendarData::NEPALI_YEARS[$year][$m - 1];
+            $epoch += self::$monthLengths[$year][$m - 1];
         }
 
         return $epoch + $day - 1;
@@ -152,7 +220,7 @@ final class Calendar
 
         $remaining = $epochDay - self::$yearStartDays[$year];
         $month = 1;
-        foreach (CalendarData::NEPALI_YEARS[$year] as $monthDays) {
+        foreach (self::$monthLengths[$year] as $monthDays) {
             if ($remaining < $monthDays) {
                 break;
             }
@@ -257,13 +325,11 @@ final class Calendar
     {
         self::build();
 
+        $maxYear = self::provider()->maxYear();
+
         return [
-            'min' => self::bsToAd(CalendarData::BS_MIN_YEAR, 1, 1),
-            'max' => self::bsToAd(
-                CalendarData::BS_MAX_YEAR,
-                12,
-                CalendarData::NEPALI_YEARS[CalendarData::BS_MAX_YEAR][11]
-            ),
+            'min' => self::bsToAd(self::provider()->minYear(), 1, 1),
+            'max' => self::bsToAd($maxYear, 12, self::$monthLengths[$maxYear][11]),
         ];
     }
 
@@ -279,15 +345,19 @@ final class Calendar
      */
     public static function supportedYears(): array
     {
-        return ['min' => CalendarData::BS_MIN_YEAR, 'max' => CalendarData::BS_MAX_YEAR];
+        return ['min' => self::provider()->minYear(), 'max' => self::provider()->maxYear()];
     }
 
     private static function assertYearInRange(int $year): void
     {
-        if ($year < CalendarData::BS_MIN_YEAR || $year > CalendarData::BS_MAX_YEAR) {
+        self::build();
+
+        $min = self::provider()->minYear();
+        $max = self::provider()->maxYear();
+
+        if ($year < $min || $year > $max) {
             throw new NepaliDateOutOfRangeException(
-                "Year [{$year}] is outside the supported range "
-                .'(BS '.CalendarData::BS_MIN_YEAR.' to '.CalendarData::BS_MAX_YEAR.').'
+                "Year [{$year}] is outside the supported range (BS {$min} to {$max})."
             );
         }
     }

@@ -4,6 +4,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Calendar data driver
+    |--------------------------------------------------------------------------
+    |
+    | Where the BS month-length table comes from.
+    |
+    |   'algorithm' - the built-in, observation-verified constant table
+    |                 (no database required, works in plain PHP)
+    |
+    |   'database'  - a `nepali_calendar_years` table in your own database.
+    |                 Publish + run the package migrations, then seed the
+    |                 table with `php artisan nepali:seed`.
+    |
+    | For fully custom sources (API, files, ...) bind your own
+    | CalendarDataProvider in the container as 'nepali-calendar.provider'.
+    |
+    */
+
+    'driver' => env('NEPALI_CALENDAR_DRIVER', 'algorithm'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Database table used by the 'database' driver
+    |--------------------------------------------------------------------------
+    |
+    */
+
+    'database_table' => env('NEPALI_CALENDAR_TABLE', 'nepali_calendar_years'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default language for month / weekday names
     |--------------------------------------------------------------------------
     |

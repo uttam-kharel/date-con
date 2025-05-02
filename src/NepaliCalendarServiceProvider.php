@@ -11,11 +11,14 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 use Sambat\NepaliCalendar\Commands\NepaliDateConvertCommand;
 use Sambat\NepaliCalendar\Commands\NepaliDateInfoCommand;
+use Sambat\NepaliCalendar\Commands\NepaliDateSeedCommand;
 use Sambat\NepaliCalendar\Facades\NepaliDate;
+use Sambat\NepaliCalendar\Providers\ArrayCalendarDataProvider;
+use Sambat\NepaliCalendar\Providers\DatabaseCalendarDataProvider;
 
 class NepaliCalendarServiceProvider extends ServiceProvider
 {
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.1.0';
 
     public function register(): void
     {
@@ -23,6 +26,20 @@ class NepaliCalendarServiceProvider extends ServiceProvider
 
         $this->app->singleton('nepali-date', fn () => new NepaliDateFactory);
         $this->app->alias('nepali-date', NepaliDateFactory::class);
+
+        $this->app->singleton(ArrayCalendarDataProvider::class);
+        $this->app->singleton(DatabaseCalendarDataProvider::class);
+
+        // The active calendar data source. Bindings registered under this
+        // key are used verbatim, so apps can supply a fully custom provider.
+        $this->app->bind('nepali-calendar.provider', function () {
+            $driver = strtolower((string) config('nepali-calendar.driver', 'algorithm'));
+
+            return match ($driver) {
+                'database', 'db' => $this->app->make(DatabaseCalendarDataProvider::class),
+                default => $this->app->make(ArrayCalendarDataProvider::class),
+            };
+        });
     }
 
     public function boot(): void
@@ -31,14 +48,22 @@ class NepaliCalendarServiceProvider extends ServiceProvider
             $this->commands([
                 NepaliDateConvertCommand::class,
                 NepaliDateInfoCommand::class,
+                NepaliDateSeedCommand::class,
             ]);
 
-            AboutCommand::add('Nepali Calendar', fn () => ['Version' => self::VERSION]);
+            AboutCommand::add('Nepali Calendar', fn () => [
+                'Version' => self::VERSION,
+                'Driver' => ucfirst((string) config('nepali-calendar.driver', 'algorithm')),
+            ]);
         }
 
         $this->publishes([
             __DIR__.'/../config/nepali-calendar.php' => config_path('nepali-calendar.php'),
         ], 'nepali-calendar-config');
+
+        $this->publishesMigrations([
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ], 'nepali-calendar-migrations');
 
         $this->registerBladeDirectives();
         $this->registerValidationRules();

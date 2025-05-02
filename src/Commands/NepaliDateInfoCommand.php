@@ -43,6 +43,7 @@ class NepaliDateInfoCommand extends Command
         $this->components->twoColumnDetail('Days in month', (string) $nepali->daysInMonth());
         $this->components->twoColumnDetail('Days in year', (string) $nepali->daysInYear());
         $this->components->twoColumnDetail('Leap year', $nepali->isLeapYear() ? 'yes' : 'no');
+        $this->components->twoColumnDetail('Data source', ucfirst((string) config('nepali-calendar.driver', 'algorithm')));
 
         $this->newLine();
         $this->components->info('Example formats');

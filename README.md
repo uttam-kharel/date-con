@@ -21,8 +21,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Immutable, Carbon-style value object with full arithmetic & diffs
 - ✅ Devanagari numerals (२०८१) and Nepali / Romanized / English names
 - ✅ Laravel validation rules, Blade directives, Facade, artisan commands
-- ✅ **No database required** — works anywhere, even outside Laravel
-- ✅ 81 tests / 2400+ assertions, O(1) conversions
+- ✅ **Choose your data source** — built-in algorithm (no DB, works anywhere) or your own database table
+- ✅ 88 tests / 2400+ assertions, O(1) conversions
 
 ---
 
@@ -46,9 +46,9 @@ and **`mr.incognito/date-converter`** (an algorithm-based converter).
 | Validation rules | ✗ | ✗ | ✓ (`nepali_date`, `nepali_date_format`) |
 | Blade directives | ✗ | ✗ | ✓ (`@nepaliDate`, `@nepaliDateHuman`) |
 | Carbon integration | ✗ | ✗ | ✓ macros |
-| Artisan commands | `nepali-date:update` (needs DB) | ✗ | `nepali:convert`, `nepali:info` |
+| Artisan commands | `nepali-date:update` (needs DB) | ✗ | `nepali:convert`, `nepali:info`, `nepali:seed` |
 | Parsing flexibility | exact `YYYY-MM-DD` only | `str_replace`-based, brittle | many formats + month names + Devanagari input |
-| Database required | **yes** (migration + seed) | no | **no** |
+| Database required | **yes** (migration + seed) | no | **optional** (`database` driver, default `algorithm`) |
 | Test coverage | none | ~12 tests | **81 tests, 2400+ assertions** |
 
 ### Problems found in the existing packages
@@ -94,11 +94,74 @@ php artisan vendor:publish --tag=nepali-calendar-config
 ```php
 // config/nepali-calendar.php
 return [
+    'driver'         => env('NEPALI_CALENDAR_DRIVER', 'algorithm'), // algorithm | database
+    'database_table' => env('NEPALI_CALENDAR_TABLE', 'nepali_calendar_years'),
     'language'       => 'nepali',    // nepali | roman | english
     'numerals'       => 'devanagari',// devanagari | english
     'week_starts_on' => 'sunday',    // sunday | monday
     'default_format' => 'Y-m-d',
 ];
+```
+
+---
+
+## Data source: algorithm or database
+
+By default the package ships its calendar data (BS 2000–2099) and needs no database.
+If your app prefers to own the data, switch the driver and the same month table is read
+from a database table instead — **one row per BS year** (months stored as JSON, ~100 rows),
+not the 52,816 per-date rows other DB-backed packages require.
+
+| Driver | Where the data lives | Setup |
+|---|---|---|
+| `algorithm` (default) | built-in, observation-verified constant table | nothing |
+| `database` | `nepali_calendar_years` table | publish migrations + `nepali:seed` |
+
+### Using the database driver
+
+```bash
+# 1. Publish config and migrations
+php artisan vendor:publish --tag=nepali-calendar-config
+php artisan vendor:publish --tag=nepali-calendar-migrations
+
+# 2. Run migrations and seed the table
+php artisan migrate
+php artisan nepali:seed                    # 100 BS years (2000 - 2099)
+
+# 3. Switch the driver
+NEPALI_CALENDAR_DRIVER=database
+```
+
+Set it in `.env`, or edit the published config directly. Verify with
+`php artisan about` (Nepali Calendar section) or `php artisan nepali:info`, which prints the
+active **Data source**.
+
+Data maintenance:
+
+```bash
+php artisan nepali:seed --fresh            # replace existing data
+php artisan nepali:seed --connection=mysql # seed a specific connection
+```
+
+`nepali:seed` refuses to run when the table already has rows (use `--fresh`), and the
+database driver validates the table on first use: it must contain a contiguous range of
+BS years starting at 2000, otherwise you get a clear error pointing at `nepali:seed`.
+Empty or partial tables never silently return wrong dates. The table is read once per
+request and cached in memory.
+
+### Custom data sources
+
+The engine reads data through the `Sambat\NepaliCalendar\Contracts\CalendarDataProvider`
+interface, so the calendar data can come from anywhere — an API, a file, another table,
+an extended year range:
+
+```php
+// AppServiceProvider::register()
+app()->singleton('nepali-calendar.provider', fn () => new MyApiCalendarDataProvider);
+
+// or swap at runtime / in tests
+use Sambat\NepaliCalendar\Calendar;
+Calendar::setProvider(new MyApiCalendarDataProvider);
 ```
 
 ---
@@ -227,6 +290,8 @@ php artisan nepali:convert 2025-02-17               # २०८१-११-०५
 php artisan nepali:convert 2081-11-05 --from=bs --to=ad
 php artisan nepali:info 2081-11-05 --language=roman # full breakdown
 php artisan nepali:info                             # today's breakdown
+php artisan nepali:seed                             # populate the DB driver's table
+php artisan nepali:seed --fresh                     # replace existing data
 ```
 
 ### Helpers
@@ -274,7 +339,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 81 tests, 2400+ assertions
+composer test        # 88 tests, 2400+ assertions
 composer pint        # Laravel code style
 ```
 

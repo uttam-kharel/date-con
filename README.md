@@ -1,5 +1,10 @@
 # 📅 Nepali Calendar (sambat/nepali-calendar)
 
+[![PHP](https://img.shields.io/badge/PHP-8.1%20%E2%80%93%208.5-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![Laravel](https://img.shields.io/badge/Laravel-10%20%E2%80%93%2012-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![Code style](https://img.shields.io/badge/code%20style-Laravel%20Pint-FF2D20)](https://laravel.com/docs/pint)
+
 **The god-tier Nepali (Bikram Sambat) date & time package for Laravel and plain PHP.**
 
 One package that replaces and supersedes every other Nepali date package:
@@ -343,7 +348,17 @@ composer test        # 88 tests, 2400+ assertions
 composer pint        # Laravel code style
 ```
 
+Supported PHP versions (**8.1 – 8.5**) and Laravel versions (10 – 12) are verified in CI
+on every push — see [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first, keep the
+[test suite](CONTRIBUTING.md#development-workflow) green, and check the
+[CHANGELOG.md](CHANGELOG.md) for what changed between releases. Report security issues
+privately — see [SECURITY.md](SECURITY.md).
+
 ## Credits & license
 
 Inspired by (and written after studying) `hmis/nepali-date` and `mr.incognito/date-converter`,
-whose shared month table this package builds upon. MIT licensed.
+whose shared month table this package builds upon. MIT licensed — see [LICENSE.md](LICENSE.md).

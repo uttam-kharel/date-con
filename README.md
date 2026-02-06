@@ -356,7 +356,8 @@ on every push — see [`.github/workflows/tests.yml`](.github/workflows/tests.ym
 Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first, keep the
 [test suite](CONTRIBUTING.md#development-workflow) green, and check the
 [CHANGELOG.md](CHANGELOG.md) for what changed between releases. Report security issues
-privately — see [SECURITY.md](SECURITY.md).
+privately — see [SECURITY.md](SECURITY.md). See [ROADMAP.md](ROADMAP.md) for the
+version-by-version feature plan.
 
 ## Credits & license
 

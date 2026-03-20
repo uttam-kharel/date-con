@@ -218,10 +218,25 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
         return $this->day;
     }
 
-    /** Quarter of the BS year, 1-4. */
+    /** Quarter of the BS year, 1-4 (Baisakh-Jeth = Q1). */
     public function quarter(): int
     {
         return intdiv($this->month - 1, 3) + 1;
+    }
+
+    /**
+     * Fiscal quarter, 1-4. The Nepali fiscal year starts in Shrawan, so
+     * Shrawan-Ashwin = Q1 ... Baisakh-Ashadh = Q4.
+     */
+    public function fiscalQuarter(): int
+    {
+        return intdiv((($this->month - NepaliFiscalYear::START_MONTH) % 12 + 12) % 12, 3) + 1;
+    }
+
+    /** The fiscal year this date belongs to (Shrawan 1 based). */
+    public function fiscalYear(): NepaliFiscalYear
+    {
+        return NepaliFiscalYear::fromDate($this);
     }
 
     /** Week day 1 (Sunday) .. 7 (Saturday) — the Nepali convention. */
@@ -454,6 +469,18 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
         return new self($this->year, 12, Calendar::daysInBsMonth($this->year, 12), $this->ad);
     }
 
+    /** Shrawan 1 of the fiscal year containing this date. */
+    public function startOfFiscalYear(): self
+    {
+        return $this->fiscalYear()->startDate();
+    }
+
+    /** Ashadh 31 of the fiscal year containing this date. */
+    public function endOfFiscalYear(): self
+    {
+        return $this->fiscalYear()->endDate();
+    }
+
     public function startOfQuarter(): self
     {
         $month = ($this->quarter() - 1) * 3 + 1;
@@ -488,6 +515,15 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public function lastOfMonth(): self
     {
         return $this->endOfMonth();
+    }
+
+    /**
+     * The inclusive range from this date to another value
+     * (e.g. $date->rangeTo('2081-12-31')).
+     */
+    public function rangeTo(mixed $end): NepaliDateRange
+    {
+        return NepaliDateRange::between($this, $end);
     }
 
     /* ------------------------------------------------------------------

@@ -2,6 +2,8 @@
 
 use Sambat\NepaliCalendar\Calendar;
 use Sambat\NepaliCalendar\NepaliDate;
+use Sambat\NepaliCalendar\NepaliDateRange;
+use Sambat\NepaliCalendar\NepaliFiscalYear;
 use Sambat\NepaliCalendar\Support\NumberConverter;
 
 if (! function_exists('nepali_date')) {
@@ -104,5 +106,25 @@ if (! function_exists('bs_age')) {
     function bs_age(mixed $birthDate): int
     {
         return NepaliDate::parse($birthDate)->age();
+    }
+}
+
+if (! function_exists('bs_fiscal_year')) {
+    /**
+     * The Nepali fiscal year (Shrawan 1 based) containing a date.
+     */
+    function bs_fiscal_year(mixed $date = null): NepaliFiscalYear
+    {
+        return NepaliFiscalYear::fromDate($date ?? NepaliDate::now());
+    }
+}
+
+if (! function_exists('bs_date_range')) {
+    /**
+     * An inclusive range between two BS dates.
+     */
+    function bs_date_range(mixed $start, mixed $end): NepaliDateRange
+    {
+        return NepaliDateRange::between($start, $end);
     }
 }

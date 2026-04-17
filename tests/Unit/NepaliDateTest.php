@@ -148,6 +148,20 @@ it('supports comparisons', function () {
     expect(NepaliDate::compare($a, $b))->toBe(-1);
 });
 
+it('computes fiscal year helpers', function () {
+    expect(NepaliDate::parse('2081-04-01')->fiscalQuarter())->toBe(1);
+    expect(NepaliDate::parse('2081-07-01')->fiscalQuarter())->toBe(2);
+    expect(NepaliDate::parse('2081-11-05')->fiscalQuarter())->toBe(3);
+    expect(NepaliDate::parse('2081-01-01')->fiscalQuarter())->toBe(4);
+
+    expect(NepaliDate::parse('2081-11-15')->startOfFiscalYear()->toDateString())->toBe('2081-04-01');
+    expect(NepaliDate::parse('2081-11-15')->endOfFiscalYear()->toDateString())
+        ->toBe(NepaliDate::parse('2082-03-01')->endOfMonth()->toDateString());
+
+    expect(NepaliDate::parse('2081-11-15')->fiscalYear()->label())->toBe('2081/82');
+    expect(NepaliDate::parse('2081-11-15')->fiscalYear()->contains('2081-11-15'))->toBeTrue();
+});
+
 it('detects weekends and special days', function () {
     expect(NepaliDate::parse('2081-01-01')->isSaturday())->toBeTrue();
     expect(NepaliDate::parse('2081-01-01')->isWeekend())->toBeTrue();

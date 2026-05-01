@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-14
+
+### Added
+
+- **`NepaliDateRange`** — immutable, inclusive BS date ranges:
+  `NepaliDateRange::between('2081-11-05', '2081-12-31')`, day-by-day iteration,
+  `count()`, `contains()`, `days()`, and slicing into calendar weeks, BS months
+  and BS years (`weeks()`, `months()`, `years()`). Reversed bounds are normalized.
+- **`NepaliFiscalYear`** — the Government of Nepal fiscal year (Shrawan 1 of BS N
+  through Ashadh 31 of BS N+1): `fromDate()`, `forYear()`, `label()` (`2083/84`),
+  `startDate()` / `endDate()`, `days()`, `contains()`, `quarter()`, `quarters()`
+  and `quarterRange()`.
+- **Fiscal helpers on `NepaliDate`** — `fiscalYear()`, `fiscalQuarter()` (1-4,
+  Shrawan-based), `startOfFiscalYear()`, `endOfFiscalYear()` and `rangeTo()`.
+- **Global helpers** — `bs_fiscal_year()` and `bs_date_range()`.
+- 17 new tests covering ranges, fiscal years and fiscal quarters
+  (**105 tests, 2,510 assertions** in total).
+
+### Fixed
+
+- Fiscal-year math follows the real convention: the year runs to Ashadh of the
+  next BS year, and labels use the short form (`2083/84`, not `2083/2084`).
+
 ## [1.2.0] - 2026-08-14
 
 ### Added

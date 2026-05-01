@@ -27,7 +27,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Devanagari numerals (२०८१) and Nepali / Romanized / English names
 - ✅ Laravel validation rules, Blade directives, Facade, artisan commands
 - ✅ **Choose your data source** — built-in algorithm (no DB, works anywhere) or your own database table
-- ✅ 88 tests / 2400+ assertions, O(1) conversions
+- ✅ Date ranges, fiscal years (2083/84) & quarters — built for reports & billing
+- ✅ 105 tests / 2500+ assertions, O(1) conversions
 
 ---
 
@@ -251,6 +252,31 @@ foreach ($d->calendar() as $week) {         // ready-made month grid for UI cale
 }
 ```
 
+### Date ranges & fiscal year
+
+```php
+use Sambat\NepaliCalendar\NepaliDateRange;
+use Sambat\NepaliCalendar\NepaliFiscalYear;
+
+$range = NepaliDateRange::between('2081-07-01', '2081-09-30'); // inclusive
+$range->count();            // 91
+$range->contains('2081-08-15');
+foreach ($range as $day) { /* NepaliDate */ }
+$range->days(); $range->weeks(); $range->months(); $range->years();
+
+$fy = NepaliFiscalYear::fromDate('2083-08-15'); // Shrawan-based fiscal year
+$fy->label();               // '2083/84'
+$fy->startDate();           // 2083-04-01 (Shrawan 1)
+$fy->endDate();             // Ashadh 31 of 2084
+$fy->quarter();             // 1-4, defaults to now
+$fy->quarterRange(2);       // NepaliDateRange
+
+NepaliDate::parse('2083-08-15')->fiscalQuarter();   // 2
+NepaliDate::parse('2083-08-15')->fiscalYear()->label(); // '2083/84'
+NepaliDate::parse('2083-08-15')->startOfFiscalYear();
+NepaliDate::parse('2083-08-15')->rangeTo('2083-12-31');
+```
+
 ### Comparison
 
 ```php
@@ -313,6 +339,8 @@ bs_days_in_year(2081)          // 366
 bs_is_leap_year(2081)          // true
 bs_age('2000-01-01')           // full years
 bs_diff_for_humans($from, $to) // human diff
+bs_fiscal_year('2083-08-15')   // fiscal year containing a date
+bs_date_range($from, $to)      // inclusive BS date range
 ```
 
 ---
@@ -344,7 +372,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 88 tests, 2400+ assertions
+composer test        # 105 tests, 2500+ assertions
 composer pint        # Laravel code style
 ```
 

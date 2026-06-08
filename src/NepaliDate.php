@@ -11,6 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
+use Sambat\NepaliCalendar\Holidays\HolidayRepository;
+use Sambat\NepaliCalendar\Holidays\NepaliHoliday;
 use Sambat\NepaliCalendar\Support\Config;
 use Sambat\NepaliCalendar\Support\Formatter;
 use Sambat\NepaliCalendar\Support\NumberConverter;
@@ -718,10 +720,111 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
         return $this->weekDay() === 1;
     }
 
-    /** Nepali weekend is Saturday. */
+    /**
+     * Whether the day is a configured weekend day (default: Saturday).
+     */
     public function isWeekend(): bool
     {
-        return $this->isSaturday();
+        $weekend = Config::get('nepali-calendar.weekend', [6]);
+        $weekend = is_array($weekend) && $weekend !== [] ? array_map('intval', $weekend) : [6];
+
+        return in_array((int) $this->ad->format('w'), $weekend, true);
+    }
+
+    /** Whether the day is a configured holiday. */
+    public function isHoliday(): bool
+    {
+        return HolidayRepository::instance()->contains($this);
+    }
+
+    /** The holiday falling on this day, if any. */
+    public function holiday(): ?NepaliHoliday
+    {
+        return HolidayRepository::instance()->forDate($this);
+    }
+
+    /** A working day: not a weekend day and not a holiday. */
+    public function isBusinessDay(): bool
+    {
+        return ! $this->isWeekend() && ! $this->isHoliday();
+    }
+
+    public function isWorkingDay(): bool
+    {
+        return $this->isBusinessDay();
+    }
+
+    public function nextBusinessDay(): self
+    {
+        return $this->addBusinessDays(1);
+    }
+
+    public function previousBusinessDay(): self
+    {
+        return $this->addBusinessDays(-1);
+    }
+
+    /**
+     * Move forward (positive) or backward (negative) by business days,
+     * skipping weekends and configured holidays.
+     */
+    public function addBusinessDays(int $days): self
+    {
+        if ($days === 0) {
+            return $this;
+        }
+
+        if (abs($days) > 366_000) {
+            throw new InvalidNepaliDateException(
+                "Cannot add [{$days}] business days: the step exceeds the supported calendar range."
+            );
+        }
+
+        $step = $days > 0 ? 1 : -1;
+        $remaining = abs($days);
+        $date = $this;
+
+        while ($remaining > 0) {
+            $date = $date->addDays($step);
+
+            if ($date->isBusinessDay()) {
+                $remaining--;
+            }
+        }
+
+        return $date;
+    }
+
+    public function subBusinessDays(int $days): self
+    {
+        return $this->addBusinessDays(-$days);
+    }
+
+    /**
+     * Business days between this date (exclusive) and $other (inclusive),
+     * signed: positive when $other is ahead, negative when behind.
+     */
+    public function businessDaysUntil(mixed $other): int
+    {
+        $other = self::coerce($other);
+
+        if ($this->equals($other)) {
+            return 0;
+        }
+
+        $direction = $this->isBefore($other) ? 1 : -1;
+        $count = 0;
+        $date = $this;
+
+        while (! $date->equals($other)) {
+            $date = $date->addDays($direction);
+
+            if ($date->isBusinessDay()) {
+                $count++;
+            }
+        }
+
+        return $direction * $count;
     }
 
     /* ------------------------------------------------------------------

@@ -84,4 +84,37 @@ return [
 
     'default_format' => 'Y-m-d',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Weekend days
+    |--------------------------------------------------------------------------
+    |
+    | Days treated as non-working by isWeekend() / isBusinessDay() and the
+    | business-day arithmetic. Uses PHP's weekday numbers:
+    | 0 = Sunday ... 6 = Saturday. Nepal's standard weekend is Saturday.
+    |
+    */
+
+    'weekend' => [6],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Holidays
+    |--------------------------------------------------------------------------
+    |
+    | Fixed public holidays used by isHoliday() / isBusinessDay(). Each entry
+    | can be a BS date string, a `'YYYY-MM-DD' => 'Holiday name'` pair, or
+    | ['date' => ..., 'name' => ..., 'type' => ...]. The core never hardcodes
+    | festive dates — supply your own, or bind 'nepali-calendar.holidays'
+    | in the container for a fully custom source.
+    |
+    | 'holidays' => [
+    |     '2083-01-01' => 'Nepali New Year',
+    |     ['date' => '2083-10-15', 'name' => 'Dashain', 'type' => 'national'],
+    | ],
+    |
+    */
+
+    'holidays' => [],
+
 ];

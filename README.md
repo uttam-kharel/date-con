@@ -28,7 +28,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Laravel validation rules, Blade directives, Facade, artisan commands
 - ✅ **Choose your data source** — built-in algorithm (no DB, works anywhere) or your own database table
 - ✅ Date ranges, fiscal years (2083/84) & quarters — built for reports & billing
-- ✅ 105 tests / 2500+ assertions, O(1) conversions
+- ✅ Business days & configurable holidays (no hardcoded festive dates)
+- ✅ 114 tests / 2500+ assertions, O(1) conversions
 
 ---
 
@@ -106,6 +107,11 @@ return [
     'numerals'       => 'devanagari',// devanagari | english
     'week_starts_on' => 'sunday',    // sunday | monday
     'default_format' => 'Y-m-d',
+    'weekend'        => [6],          // PHP weekday numbers: 0 = Sunday ... 6 = Saturday
+    'holidays'       => [
+        '2083-01-01' => 'Nepali New Year',
+        ['date' => '2083-10-15', 'name' => 'Dashain', 'type' => 'national'],
+    ],
 ];
 ```
 
@@ -277,6 +283,33 @@ NepaliDate::parse('2083-08-15')->startOfFiscalYear();
 NepaliDate::parse('2083-08-15')->rangeTo('2083-12-31');
 ```
 
+### Business days & holidays
+
+Holidays come from **your** config or container — the core never hardcodes
+festive dates:
+
+```php
+// config/nepali-calendar.php
+'weekend' => [6],                // Saturday
+'holidays' => [
+    '2083-01-01' => 'Nepali New Year',
+    ['date' => '2083-10-15', 'name' => 'Dashain', 'type' => 'national'],
+],
+
+// or bind your own source
+app()->singleton('nepali-calendar.holidays', fn () => new HolidayRepository(...));
+```
+
+```php
+$d = NepaliDate::parse('2083-08-15');
+
+$d->isWeekend();                 // Saturday by default, configurable
+$d->isHoliday();                 // matches the configured holidays
+$d->isBusinessDay();             // not weekend and not holiday
+$d->addBusinessDays(10);         // skips weekends and holidays
+$d->businessDaysUntil('2083-09-01'); // signed business-day gap
+```
+
 ### Comparison
 
 ```php
@@ -372,7 +405,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 105 tests, 2500+ assertions
+composer test        # 114 tests, 2500+ assertions
 composer pint        # Laravel code style
 ```
 

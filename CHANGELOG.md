@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-14
+
+### Added
+
+- **Holidays** — `NepaliHoliday` value object, `HolidayCollection` and a
+  config-driven `HolidayRepository`. Holidays are supplied through the
+  `holidays` config array (date string, `'date' => 'name'` pair, or
+  `['date' => ..., 'name' => ..., 'type' => ...]`), a container binding
+  (`nepali-calendar.holidays`), or `HolidayRepository::setInstance()` in
+  tests. The core never hardcodes festive dates.
+- **Business days on `NepaliDate`** — `isBusinessDay()` / `isWorkingDay()`,
+  `addBusinessDays()` / `subBusinessDays()`, `nextBusinessDay()` /
+  `previousBusinessDay()` and signed `businessDaysUntil()`.
+- **Configurable weekend** — the `weekend` config option (default `[6]` =
+  Saturday, PHP weekday numbers) drives `isWeekend()` and all business-day
+  arithmetic; `isWeekend()` is no longer hardcoded to Saturday.
+- 9 new tests covering weekends, business-day arithmetic, holiday parsing,
+  serialization and config-driven behavior (**114 tests, 2,559 assertions**).
+
 ## [1.3.0] - 2026-08-14
 
 ### Added

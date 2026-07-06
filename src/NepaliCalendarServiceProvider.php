@@ -18,7 +18,7 @@ use Sambat\NepaliCalendar\Providers\DatabaseCalendarDataProvider;
 
 class NepaliCalendarServiceProvider extends ServiceProvider
 {
-    public const VERSION = '1.3.0';
+    public const VERSION = '1.4.0';
 
     public function register(): void
     {

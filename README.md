@@ -29,7 +29,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ **Choose your data source** — built-in algorithm (no DB, works anywhere) or your own database table
 - ✅ Date ranges, fiscal years (2083/84) & quarters — built for reports & billing
 - ✅ Business days & configurable holidays (no hardcoded festive dates)
-- ✅ 114 tests / 2500+ assertions, O(1) conversions
+- ✅ Eloquent casts, ranged validation rules & query helpers for Laravel
+- ✅ 126 tests / 2500+ assertions, O(1) conversions
 
 ---
 
@@ -324,12 +325,54 @@ $d->isToday(); $d->isPast(); $d->isFuture(); $d->isWeekend();
 'birth_date' => ['required', 'nepali_date'],
 'dob'        => ['required', 'nepali_date_format:Y-m-d'],
 
+// ranged rules
+'end_date' => ['required', 'nepali_date_before:2083-04-01'],
+'start_date' => ['required', 'nepali_date_after:2083-01-01'],
+'event_date' => ['required', 'nepali_date_between:2083-01-01,2083-12-31'],
+
 // or rule classes
 use Sambat\NepaliCalendar\Rules\NepaliDateRule;
 use Sambat\NepaliCalendar\Rules\NepaliDateFormatRule;
+use Sambat\NepaliCalendar\Rules\NepaliDateBeforeRule;
+use Sambat\NepaliCalendar\Rules\NepaliDateAfterRule;
+use Sambat\NepaliCalendar\Rules\NepaliDateBetweenRule;
 
 'date' => ['required', new NepaliDateRule],
 'date' => ['required', new NepaliDateFormatRule('Y-m-d')],
+'date' => ['required', new NepaliDateBeforeRule('2083-04-01')],
+'date' => ['required', new NepaliDateAfterRule('2083-01-01')],
+'date' => ['required', new NepaliDateBetweenRule('2083-01-01', '2083-12-31')],
+```
+
+### Eloquent casts
+
+Store the canonical Gregorian date; present BS everywhere in your app:
+
+```php
+use Sambat\NepaliCalendar\Casts\NepaliDateCast;
+use Sambat\NepaliCalendar\Casts\NepaliDateTimeCast;
+
+protected $casts = [
+    'bill_date' => NepaliDateCast::class,        // date-only
+    'appointment_at' => NepaliDateTimeCast::class, // keeps the time
+];
+
+$invoice->bill_date;                 // NepaliDate
+$invoice->bill_date->format('l, F j, Y');  // सोमबार, फागुन ५, २०८१
+$invoice->bill_date = '2081-11-05';  // or NepaliDate | Carbon | array
+```
+
+### Query helpers
+
+Query AD-backed columns with BS predicates:
+
+```php
+Report::whereNepaliDate('bill_date', '2081-11-05')->get();
+Report::whereNepaliYear('bill_date', 2081)->get();
+Report::whereNepaliMonth('bill_date', 2081, 11)->get();
+Report::whereNepaliDay('bill_date', 2081, 11, 5)->get();
+Report::whereNepaliBetween('bill_date', '2081-07-01', '2081-09-30')->get();
+Report::orderByNepaliDate('bill_date', 'desc')->get();
 ```
 
 ### Blade
@@ -405,7 +448,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 114 tests, 2500+ assertions
+composer test        # 126 tests, 2500+ assertions
 composer pint        # Laravel code style
 ```
 

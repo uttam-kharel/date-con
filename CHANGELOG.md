@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-14
+
+### Added
+
+- **Ranged validation rules** — `nepali_date_before:date`, `nepali_date_after:date`
+  and `nepali_date_between:start,end` string rules plus the object-style
+  `NepaliDateBeforeRule`, `NepaliDateAfterRule` and `NepaliDateBetweenRule`.
+- **Eloquent casts** — `NepaliDateCast` (date-only) and `NepaliDateTimeCast`
+  (preserves the time of day). The canonical Gregorian value is stored in the
+  database; the model presents the BS date on read.
+- **Query helpers** — `whereNepaliDate`, `whereNepaliYear`, `whereNepaliMonth`,
+  `whereNepaliDay`, `whereNepaliBetween` and `orderByNepaliDate` registered as
+  macros on Eloquent's Builder, translating BS predicates onto canonical
+  AD-backed columns.
+- 12 new tests covering the ranged rules, casts and query helpers
+  (**126 tests, 2,593 assertions** in total).
+
+### Fixed
+
+- Custom validation rule messages now interpolate the actual attribute name
+  (Laravel does not substitute `:attribute` inside replacer output).
+
 ## [1.4.0] - 2026-08-14
 
 ### Added

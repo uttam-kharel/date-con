@@ -16,8 +16,11 @@ that must happen *between* releases.
 | **v1.0.0** | ^8.1 | O(1) AD⇄BS engine, immutable `NepaliDate`, Devanagari numerals, full `date()` formatting with Nepali/Roman/English names, arithmetic, diffs, periods, calendar grids, validation rules, Blade directives, Carbon macros, facade, artisan commands, helpers — 81 tests | ✅ tagged |
 | **v1.1.0** | ^8.1 | Configurable data source: `driver` option (`algorithm` \| `database`), `CalendarDataProvider` contract, database driver, publishable migration, `nepali:seed`, runtime provider swapping, plain-PHP PDO support — 88 tests | ✅ tagged |
 | **v1.2.0** | ^8.1–8.5 | Explicit PHP 8.1–8.5 support, GitHub Actions matrix, MIT license, CHANGELOG, CONTRIBUTING, SECURITY, `.gitattributes`, README badges | ✅ tagged |
+| **v1.3.0** | ^8.1 | `NepaliDateRange` (inclusive ranges, day iteration, week/month/year slicing), `NepaliFiscalYear` (Shrawan-based, `2083/84` labels, quarters, quarter ranges), fiscal helpers on `NepaliDate`, `bs_fiscal_year()` / `bs_date_range()` helpers — 105 tests | ✅ tagged |
+| **v1.4.0** | ^8.1 | `NepaliHoliday` / `HolidayCollection` / config-driven `HolidayRepository` (never hardcoded), `isBusinessDay()`, `addBusinessDays()`, signed `businessDaysUntil()`, configurable `weekend` — 114 tests | ✅ tagged |
+| **v1.5.0** | ^8.1 | Ranged validation (`nepali_date_before/after/between` + rule classes), `NepaliDateCast` / `NepaliDateTimeCast` (canonical AD storage, BS presentation), query macros (`whereNepaliDate/Year/Month/Day/Between`, `orderByNepaliDate`) — 126 tests | ✅ tagged |
 
-Current baseline: **31 commits, 3 annotated tags, 88 tests / 2,429 assertions,
+Current baseline: **42 commits, 6 annotated tags, 126 tests / 2,593 assertions,
 Pint clean, `composer validate --strict` green, every tag verified standalone.**
 
 The conversion range is **BS 2000–2099 / AD 1943–2043**, bounded by the
@@ -87,9 +90,6 @@ EOL. PHP 8.6 (beta as of late 2026) becomes a CI target when 2.x+ lands.
 
 | Version | 🎯 Features | Effort |
 |---|---|---|
-| **v1.3.0** | **Fiscal year & quarters & date ranges** — `NepaliFiscalYear` (`fromDate`, `label` `2083/84`, `startDate` = Shrawan 1, `endDate` = Ashadh 31, `quarter`, `contains`), fiscal-quarter helpers, `NepaliDateRange::between()` with `days()/weeks()/months()/years()` iteration and `count()` | M |
-| **v1.4.0** | **Holidays & business days** — `HolidayProvider` contract (optional, never hardcoded in core), `isHoliday()`, `isBusinessDay()`, `addBusinessDays()`, `businessDaysUntil()`, Nepal weekend config (Saturday) | M |
-| **v1.5.0** | **Laravel data layer** — Eloquent casts `NepaliDateCast` / `NepaliDateTimeCast` (store canonical AD, present BS), validation expansion (`nepali_date_before/after/between`, ranged format rule), query helpers (`whereNepaliYear`, `whereNepaliMonth` on AD-backed columns) | M |
 | **v1.6.0** | **Formatting & DX polish** — format presets (`DATE_SHORT/MEDIUM/LONG/FULL`, datetime variants), locale-aware number grouping, richer `@method` docblocks for IDE autocomplete | S |
 | **v1.7.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
 | **v1.8.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
@@ -206,8 +206,8 @@ every tag.
 
 | When | Milestones |
 |---|---|
-| 2026 Q3–Q4 | v1.3.0 (fiscal year, quarters, ranges) · v1.4.0 (holidays, business days) |
-| 2027 H1 | v1.5.0 (casts, validation expansion, query helpers) · v1.6.0 (presets, DX) |
+| 2026 Q3–Q4 | ✅ v1.3.0 (fiscal year, quarters, ranges) · ✅ v1.4.0 (holidays, business days) · ✅ v1.5.0 (casts, validation, query helpers) |
+| 2027 H1 | v1.6.0 (presets, DX) · v1.7.0–v1.8.0 (Livewire / Filament pickers) |
 | 2027 H2 | v1.7.0–v1.9.0 (Livewire, Filament, export) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
 | 2028 | v2.1–v2.6 (formatting, locales, holidays, performance, recurrence, query API) |
 | 2028–2029 | v3.0 ecosystem split · CLI · API · docs site · holidays package |

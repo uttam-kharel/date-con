@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-14
+
+### Added
+
+- **Format presets** — the `DateFormat` enum (`SHORT`, `MEDIUM`, `LONG`, `FULL`,
+  `DATETIME_SHORT/MEDIUM/LONG/FULL`, `TIME_SHORT/MEDIUM/FULL`) with
+  `NepaliDate::formatPreset(DateFormat::FULL)`, which render through the normal
+  format engine (Devanagari numerals and Nepali names by default):
+  `फागुन ५, २०८१`, `सोमबार, फागुन ५, २०८१`.
+- 2 new tests covering presets in all three name languages and the time
+  variants (**128 tests, 2,604 assertions** in total).
+
 ## [1.5.0] - 2026-08-14
 
 ### Added

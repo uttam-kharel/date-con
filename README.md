@@ -30,7 +30,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Date ranges, fiscal years (2083/84) & quarters — built for reports & billing
 - ✅ Business days & configurable holidays (no hardcoded festive dates)
 - ✅ Eloquent casts, ranged validation rules & query helpers for Laravel
-- ✅ 126 tests / 2500+ assertions, O(1) conversions
+- ✅ Named format presets (SHORT / MEDIUM / LONG / FULL, date & time)
+- ✅ 128 tests / 2600+ assertions, O(1) conversions
 
 ---
 
@@ -230,6 +231,20 @@ $date->format('H:i:s');                    // time from the AD instant
 Supported tokens: `Y y m n M F d j S D l N w z t L W` plus time tokens
 `g G h H i s A a U e O P T c r`. `z` is BS day-of-year (0-based), `t` days in the BS month,
 `L` 1 when the BS year has 366 days, `W` week number within the BS year.
+
+Named presets (via the `DateFormat` enum) render the common shapes without
+remembering token strings:
+
+```php
+use Sambat\NepaliCalendar\Enums\DateFormat;
+
+$date->formatPreset(DateFormat::SHORT);          // २०८१-११-०५
+$date->formatPreset(DateFormat::LONG);           // फागुन ५, २०८१
+$date->formatPreset(DateFormat::FULL);           // सोमबार, फागुन ५, २०८१
+$date->formatPreset(DateFormat::FULL, 'english', false); // Monday, February 17, 2025
+$date->formatPreset(DateFormat::DATETIME_SHORT); // २०८१-११-०५ १४:३०
+$date->formatPreset(DateFormat::TIME_FULL);      // २:३०:४५ PM
+```
 
 ### Arithmetic & diffs (immutable)
 
@@ -448,7 +463,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 126 tests, 2500+ assertions
+composer test        # 128 tests, 2600+ assertions
 composer pint        # Laravel code style
 ```
 

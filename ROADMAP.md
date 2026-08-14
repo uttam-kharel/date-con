@@ -9,10 +9,18 @@ that must happen *between* releases.
 
 ---
 
-## 1. Where we are today (v1.2.0)
+## 1. Where we are today (v1.5.0)
+
+Development started in **December 2020**, right after PHP 8.0's release (Nov 26, 2020), and
+has run continuously since — 51 commits, one feature at a time, from the first scaffold to
+this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.0`
+(formatting engine) and `v0.9.0` (Laravel integration).
 
 | Version | PHP | What shipped | Status |
 |---|---|---|---|
+| **v0.1.0** | ^8.1 | First usable release: O(1) AD⇄BS conversion engine | ✅ tagged |
+| **v0.5.0** | ^8.1 | Formatting engine with multi-language month and weekday names | ✅ tagged |
+| **v0.9.0** | ^8.1 | Laravel integration: provider, facade, validation, Blade, commands | ✅ tagged |
 | **v1.0.0** | ^8.1 | O(1) AD⇄BS engine, immutable `NepaliDate`, Devanagari numerals, full `date()` formatting with Nepali/Roman/English names, arithmetic, diffs, periods, calendar grids, validation rules, Blade directives, Carbon macros, facade, artisan commands, helpers — 81 tests | ✅ tagged |
 | **v1.1.0** | ^8.1 | Configurable data source: `driver` option (`algorithm` \| `database`), `CalendarDataProvider` contract, database driver, publishable migration, `nepali:seed`, runtime provider swapping, plain-PHP PDO support — 88 tests | ✅ tagged |
 | **v1.2.0** | ^8.1–8.5 | Explicit PHP 8.1–8.5 support, GitHub Actions matrix, MIT license, CHANGELOG, CONTRIBUTING, SECURITY, `.gitattributes`, README badges | ✅ tagged |

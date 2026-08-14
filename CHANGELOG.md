@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-08-14
+
+### Added
+
+- **Calendar range extended to BS 2100** (AD 1943-04-14 .. 2044-04-12). BS 2100 is
+  the community-verified continuation (Nepal Panchanga Nirnayak Samiti based),
+  cross-checked against independent Nepali calendar sites which place Baisakh 1
+  2100 on April 14 2043 — one day after the previously verified 2099-12-30 =
+  2043-04-13 boundary. Historical years 2000-2099 were not touched.
+- Out-of-range exception messages now derive their range labels from the active
+  dataset instead of hardcoding them.
+- GitHub Actions **release workflow** (`release.yml`) that runs the suite on
+  every `v*` tag and creates a GitHub Release, plus a **`RELEASING.md`** guide
+  documenting the full release process.
+- 5 new tests covering the extended boundary, the BS 2100 anchors, the new range
+  and the 101-year seed (**133 tests, 2,633 assertions** in total).
+
 ## [1.6.0] - 2026-08-14
 
 ### Added

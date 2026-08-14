@@ -9,10 +9,10 @@ that must happen *between* releases.
 
 ---
 
-## 1. Where we are today (v1.5.0)
+## 1. Where we are today (v1.7.0)
 
 Development started in **December 2020**, right after PHP 8.0's release (Nov 26, 2020), and
-has run continuously since — 51 commits, one feature at a time, from the first scaffold to
+has run continuously since — 64 commits, one feature at a time, from the first scaffold to
 this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.0`
 (formatting engine) and `v0.9.0` (Laravel integration).
 
@@ -27,13 +27,14 @@ this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.
 | **v1.3.0** | ^8.1 | `NepaliDateRange` (inclusive ranges, day iteration, week/month/year slicing), `NepaliFiscalYear` (Shrawan-based, `2083/84` labels, quarters, quarter ranges), fiscal helpers on `NepaliDate`, `bs_fiscal_year()` / `bs_date_range()` helpers — 105 tests | ✅ tagged |
 | **v1.4.0** | ^8.1 | `NepaliHoliday` / `HolidayCollection` / config-driven `HolidayRepository` (never hardcoded), `isBusinessDay()`, `addBusinessDays()`, signed `businessDaysUntil()`, configurable `weekend` — 114 tests | ✅ tagged |
 | **v1.5.0** | ^8.1 | Ranged validation (`nepali_date_before/after/between` + rule classes), `NepaliDateCast` / `NepaliDateTimeCast` (canonical AD storage, BS presentation), query macros (`whereNepaliDate/Year/Month/Day/Between`, `orderByNepaliDate`) — 126 tests | ✅ tagged |
+| **v1.6.0** | ^8.1 | `DateFormat` presets (`SHORT/MEDIUM/LONG/FULL`, datetime & time variants) via `formatPreset()` — 128 tests | ✅ tagged |
+| **v1.7.0** | ^8.1 | **Dataset extended to BS 2100** (community-verified, anchored at 2100-01-01 = 2043-04-14), dynamic range labels in out-of-range exceptions, GitHub release workflow + `RELEASING.md` — 133 tests | ✅ tagged |
 
-Current baseline: **50 commits, 6 annotated tags, 126 tests / 2,593 assertions,
+Current baseline: **64 commits, 11 annotated tags, 133 tests / 2,633 assertions,
 Pint clean, `composer validate --strict` green, every tag verified standalone.**
 
-The conversion range is **BS 2000–2099 / AD 1943–2043**, bounded by the
-observation-verified month table. That dataset — and its verification — is the
-foundation everything else stands on (see §7).
+The conversion range is **BS 2000–2100 / AD 1943–2044**. The dataset — and its
+verification — is the foundation everything else stands on (see §5).
 
 ---
 
@@ -98,10 +99,9 @@ EOL. PHP 8.6 (beta as of late 2026) becomes a CI target when 2.x+ lands.
 
 | Version | 🎯 Features | Effort |
 |---|---|---|
-| **v1.6.0** | **Formatting & DX polish** — format presets (`DATE_SHORT/MEDIUM/LONG/FULL`, datetime variants), locale-aware number grouping, richer `@method` docblocks for IDE autocomplete | S |
-| **v1.7.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
-| **v1.8.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
-| **v1.9.0** | **Export** — `toArray()/toJson()` already exist; add CSV and iCalendar (`.ics`) export for calendars and ranges | S |
+| **v1.8.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
+| **v1.9.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
+| **v1.10.0** | **Export** — `toArray()/toJson()` already exist; add CSV and iCalendar (`.ics`) export for calendars and ranges | S |
 
 ### 4.3 Planned — 2.x · architecture release (PHP 8.2+, breaking changes land here, not randomly in 1.x)
 
@@ -135,18 +135,23 @@ sake of new keywords.
 
 ## 5. The one technical risk that gates everything
 
-**Dataset expansion beyond BS 2099.** Every feature above is built on the month
-table; the table's real-world source currently runs to 2099. Before promising
-wider ranges:
+**Dataset expansion beyond BS 2100.** v1.7.0 extended the range through BS 2100 by
+following exactly the process below: sourced a community-verified continuation
+(Panchanga Samiti based), cross-checked it against an independent Nepali calendar
+site (Baisakh 1 2100 = April 14 2043, one day past the verified 2099 boundary),
+extended the constant table + fixtures + round-trip tests, and released it as a
+backward-compatible minor with an explicit CHANGELOG note. The same process applies
+to every future year:
 
 1. Source and *document* an authoritative continuation (gazette, government
    calendar, cross-checked holiday calendars).
 2. Verify against independent anchors (Nepali New Year dates, Poush 1, festivals).
-3. Extend `data/calendar/*.json` + fixtures + round-trip tests.
+3. Extend the table + fixtures + round-trip tests.
 4. Release as a minor (backward compatible) with an explicit CHANGELOG note.
 
-Until then, the **supported range is a documented contract**, and out-of-range
-dates throw typed exceptions — never silent `null`s.
+Beyond 2100 the projections get increasingly uncertain — the **supported range
+remains a documented contract**, and out-of-range dates throw typed exceptions
+with the range spelled out — never silent `null`s.
 
 ---
 
@@ -180,10 +185,10 @@ A release does not happen if any gate fails.
 
 ### 6.4 CI evolution
 
-- Now: matrix PHP 8.1–8.5, `--prefer-lowest` on the floor, Pint, validate, audit.
-- Later: `lowest / current / latest` dependency legs; coverage job; a **release
-  workflow** that bumps version, updates CHANGELOG, tags `vX.Y.Z`, and publishes
-  to Packagist.
+- Now: matrix PHP 8.1–8.5, `--prefer-lowest` on the floor, Pint, validate, audit;
+  a **release workflow** that builds a GitHub release from each `v*` tag.
+- Later: `lowest / current / latest` dependency legs; coverage job; automatic
+  Packagist publishing via webhook.
 
 ### 6.5 Documentation
 
@@ -214,9 +219,9 @@ every tag.
 
 | When | Milestones |
 |---|---|
-| 2026 Q3–Q4 | ✅ v1.3.0 (fiscal year, quarters, ranges) · ✅ v1.4.0 (holidays, business days) · ✅ v1.5.0 (casts, validation, query helpers) |
-| 2027 H1 | v1.6.0 (presets, DX) · v1.7.0–v1.8.0 (Livewire / Filament pickers) |
-| 2027 H2 | v1.7.0–v1.9.0 (Livewire, Filament, export) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
+| 2026 Q3–Q4 | ✅ v1.3.0 (fiscal year, quarters, ranges) · ✅ v1.4.0 (holidays, business days) · ✅ v1.5.0 (casts, validation, query helpers) · ✅ v1.6.0 (format presets) · ✅ v1.7.0 (dataset to BS 2100, release workflow) |
+| 2027 H1 | v1.8.0 (Livewire pickers) · v1.9.0 (Filament pickers) |
+| 2027 H2 | v1.10.0 (export) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
 | 2028 | v2.1–v2.6 (formatting, locales, holidays, performance, recurrence, query API) |
 | 2028–2029 | v3.0 ecosystem split · CLI · API · docs site · holidays package |
 | 2029+ | v4.0 — modern PHP floor |

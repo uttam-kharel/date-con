@@ -31,7 +31,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Business days & configurable holidays (no hardcoded festive dates)
 - ✅ Eloquent casts, ranged validation rules & query helpers for Laravel
 - ✅ Named format presets (SHORT / MEDIUM / LONG / FULL, date & time)
-- ✅ 128 tests / 2600+ assertions, O(1) conversions
+- ✅ **BS 2000–2100** — the range was extended with a verified, community-sourced year
+- ✅ 133 tests / 2600+ assertions, O(1) conversions
 
 ---
 
@@ -42,10 +43,10 @@ and **`mr.incognito/date-converter`** (an algorithm-based converter).
 
 | Area | `hmis/nepali-date` | `mr.incognito/date-converter` | **This package** |
 |---|---|---|---|
-| Data source | MySQL `dates` table + 52k-row SQL dump + seeder | hardcoded 2000–2099 table | hardcoded 2000–2099 table, verified |
+| Data source | MySQL `dates` table + 52k-row SQL dump + seeder | hardcoded 2000–2099 table | hardcoded 2000–2100 table, verified |
 | Conversion | `LIKE` query + `Cache::rememberForever` | day-by-day while loops (O(n)) | precomputed cumulative days (O(1)) |
 | Returns | `?string` or `null` on miss | `string` or raw exception **message string** | typed `NepaliDate` object, typed exceptions |
-| Range | depends on SQL dump (checked: 1964–2058 AD) | AD 1944–2033 only (data has more) | **BS 2000–2099 / AD 1943–2043** |
+| Range | depends on SQL dump (checked: 1964–2058 AD) | AD 1944–2033 only (data has more) | **BS 2000–2100 / AD 1943–2044** |
 | Weekday / month names | ✗ | ✓ (Devanagari only) | ✓ Nepali + Romanized + English |
 | Devanagari numerals | ✗ | ✗ | ✓ |
 | Formatting | none (fixed `Y-m-d`) | only `Y`, `m`, `d` via `str_replace` | **full PHP `date()` token set** + escapes |
@@ -121,9 +122,9 @@ return [
 
 ## Data source: algorithm or database
 
-By default the package ships its calendar data (BS 2000–2099) and needs no database.
+By default the package ships its calendar data (BS 2000–2100) and needs no database.
 If your app prefers to own the data, switch the driver and the same month table is read
-from a database table instead — **one row per BS year** (months stored as JSON, ~100 rows),
+from a database table instead — **one row per BS year** (months stored as JSON, 101 rows),
 not the 52,816 per-date rows other DB-backed packages require.
 
 | Driver | Where the data lives | Setup |
@@ -140,7 +141,7 @@ php artisan vendor:publish --tag=nepali-calendar-migrations
 
 # 2. Run migrations and seed the table
 php artisan migrate
-php artisan nepali:seed                    # 100 BS years (2000 - 2099)
+php artisan nepali:seed                    # 101 BS years (2000 - 2100)
 
 # 3. Switch the driver
 NEPALI_CALENDAR_DRIVER=database
@@ -438,9 +439,13 @@ bs_date_range($from, $to)      // inclusive BS date range
 
 ## Accuracy
 
-The calendar table (BS 2000–2099) is the standard observation-based record and is anchored at
-**BS 2000-01-01 = AD 1943-04-14**. Every conversion was verified against independently known
-real-world dates, and the test suite round-trips sampled days across the entire range:
+The calendar table (BS 2000–2100) is anchored at **BS 2000-01-01 = AD 1943-04-14**.
+Years 2000–2099 are the standard observation-based record shared by most Nepali date
+packages; **BS 2100** is the community-verified continuation (Panchanga Samiti based,
+cross-checked against Nepali calendar sites which place Baisakh 1 2100 on April 14 2043,
+one day after our verified 2099-12-30 = 2043-04-13 boundary). Every conversion is
+verified against independently known real-world dates, and the test suite round-trips
+sampled days across the entire range:
 
 | BS | AD | Why it's known |
 |---|---|---|
@@ -451,19 +456,22 @@ real-world dates, and the test suite round-trips sampled days across the entire 
 | 2081-09-01 | 2024-12-16 | Poush 1, 2081 |
 | 2081-10-03 | 2025-01-16 | Magh 3, 2081 (Maghe Sankranti week) |
 | 2081-11-05 | 2025-02-17 | Monday 2025-02-17 |
+| 2099-12-30 | 2043-04-13 | Verified range boundary (previous max) |
+| 2100-01-01 | 2043-04-14 | Baisakh 1 2100 (extended year, cross-checked) |
+| 2100-12-30 | 2044-04-12 | Extended range boundary (new max) |
 
 ## Supported range
 
-- BS: **2000-01-01 … 2099-12-30**
-- AD: **1943-04-14 … 2043-04-13**
+- BS: **2000-01-01 … 2100-12-30**
+- AD: **1943-04-14 … 2044-04-12**
 
 Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
-`InvalidNepaliDateException`).
+`InvalidNepaliDateException`), with the range spelled out in the message.
 
 ## Testing
 
 ```bash
-composer test        # 128 tests, 2600+ assertions
+composer test        # 133 tests, 2600+ assertions
 composer pint        # Laravel code style
 ```
 

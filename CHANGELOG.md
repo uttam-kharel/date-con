@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-08-14
+
+### Fixed
+
+- **Provider no longer crashes on Laravel 10** — `publishesMigrations()` only exists
+  on Laravel 11+; the provider now falls back to the classic `publishes()` call so
+  the package boots on every supported version (10 – 13).
+- **DB-backed feature tests run on in-memory SQLite** — testbench 8 (Laravel 10)
+  defaults to MySQL, which is not available in CI; `phpunit.xml` now pins
+  `DB_CONNECTION=sqlite` + `DB_DATABASE=:memory:` so the suite is environment-agnostic.
+- **CI install step fixed** — the Laravel matrix is pinned via
+  `composer require --no-update` (a plain `composer update` then resolves), because
+  `composer update pkg:constraint` is not allowed without a lock file. The
+  Laravel 10 – 13 matrix now actually runs on every push.
+
+Verified against **Laravel 10 (testbench 8), 12 (testbench 10) and 13 (testbench 11)** —
+**151 tests / 2,713 assertions**.
+
 ## [1.10.0] - 2026-08-14
 
 ### Added

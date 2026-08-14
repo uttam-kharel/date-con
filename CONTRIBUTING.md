@@ -45,12 +45,19 @@ independent, verifiable source (government gazette, holiday calendars, ...).
 | `src/NepaliDate.php` | The immutable value object (public API surface) |
 | `src/Contracts/` | Extension points (e.g. `CalendarDataProvider`) |
 | `src/Providers/` | Shipped data providers (array, database) |
-| `src/Constants/CalendarData.php` | The verified BS 2000-2099 month table |
+| `src/Constants/CalendarData.php` | The verified BS 2000-2100 month table |
 | `src/Support/` | Formatting, parsing, numeral and config helpers |
 | `src/Commands/` | Artisan commands (`nepali:convert`, `nepali:info`, `nepali:seed`) |
 | `tests/` | Pest suite (Unit + Feature) |
 | `config/` | Publishable package config |
 | `database/migrations/` | Migration for the database driver |
+
+## Cutting a release
+
+Maintainers: releases are cut straight from `main` by tagging `vX.Y.Z` after updating
+the changelog, version constant and docs. The `release` GitHub Actions workflow runs
+the suite on the tag and creates the GitHub Release. Full process in
+[`RELEASING.md`](RELEASING.md).
 
 ## Reporting bugs
 

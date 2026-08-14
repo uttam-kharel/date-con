@@ -37,6 +37,26 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 
 ---
 
+## Documentation
+
+The full documentation lives in [`docs/`](docs/) — one page per topic:
+
+| Page | Covers |
+|---|---|
+| [Introduction](docs/00-introduction.md) | what the package is, feature inventory, layout |
+| [Installation & config](docs/01-installation.md) | install, every config key, algorithm vs database driver, custom providers |
+| [Quick start](docs/02-quick-start.md) | the 5-minute tour in both BS and English workflows |
+| [Conversion & parsing](docs/03-conversion.md) | AD ⇄ BS, every accepted input, supported range, accuracy, errors |
+| [Formatting](docs/04-formatting.md) | full token table, named presets, languages, Devanagari numerals, `formatBoth()` |
+| [Dates](docs/05-dates.md) | the complete `NepaliDate` API — getters, arithmetic, periods, diffs |
+| [Date ranges & recurrence](docs/06-date-ranges.md) | ranges, set operations, recurrence rules, CSV/iCal export |
+| [Fiscal year & quarters](docs/07-fiscal-year.md) | Shrawan-based fiscal years, quarters, quarter ranges |
+| [Business days & holidays](docs/08-business-days.md) | weekends, holidays, business-day math, custom holiday sources |
+| [Laravel](docs/09-laravel.md) | validation, Eloquent casts, query helpers, Blade, Carbon macros, artisan, helpers |
+| [API reference](docs/10-api-reference.md) | every public class, method and signature in one place |
+
+---
+
 ## Why this package exists (the study)
 
 Two packages were studied in detail: **`hmis/nepali-date`** (a DB-backed converter)
@@ -282,9 +302,9 @@ foreach ($d->calendar() as $week) {         // ready-made month grid for UI cale
 use Sambat\NepaliCalendar\NepaliDateRange;
 use Sambat\NepaliCalendar\NepaliFiscalYear;
 
-$range = NepaliDateRange::between('2081-07-01', '2081-09-30'); // inclusive
+$range = NepaliDateRange::between('2081-05-01', '2081-07-30'); // inclusive
 $range->count();            // 91
-$range->contains('2081-08-15');
+$range->contains('2081-06-15');
 foreach ($range as $day) { /* NepaliDate */ }
 $range->days(); $range->weeks(); $range->months(); $range->years();
 
@@ -298,24 +318,24 @@ $fy->quarterRange(2);       // NepaliDateRange
 NepaliDate::parse('2083-08-15')->fiscalQuarter();   // 2
 NepaliDate::parse('2083-08-15')->fiscalYear()->label(); // '2083/84'
 NepaliDate::parse('2083-08-15')->startOfFiscalYear();
-NepaliDate::parse('2083-08-15')->rangeTo('2083-12-31');
+NepaliDate::parse('2083-08-15')->rangeTo('2083-12-30');
 ```
 
 Ranges can be compared, combined and sliced for business reporting:
 
 ```php
-$booking = NepaliDateRange::between('2083-08-10', '2083-08-15');
-$ward    = NepaliDateRange::between('2083-08-01', '2083-08-31');
+$booking = NepaliDateRange::between('2083-01-10', '2083-01-15');
+$month   = NepaliDateRange::between('2083-01-01', '2083-01-31'); // Baisakh, 31 days
 
-$booking->overlaps($ward);           // true
-$booking->merge($ward);              // 2083-08-01 .. 2083-08-31
-$booking->intersection($ward);       // 2083-08-10 .. 2083-08-15
-$ward->gap($otherRange);             // days between two ranges, or null
-$ward->containsRange($booking);      // true
-$ward->businessDays();               // list<NepaliDate> skipping weekends+holidays
-$ward->businessDayCount();           // int
-$ward->weekends(); $ward->holidays();
-$ward->daysEvery(7);                 // every 7th day
+$booking->overlaps($month);          // true
+$booking->merge($month);             // 2083-01-01 .. 2083-01-31
+$booking->intersection($month);      // 2083-01-10 .. 2083-01-15
+$month->gap($otherRange);            // days between two ranges, or null
+$month->containsRange($booking);     // true
+$month->businessDays();              // list<NepaliDate> skipping weekends+holidays
+$month->businessDayCount();          // int
+$month->weekends(); $month->holidays();
+$month->daysEvery(7);                // every 7th day
 
 $ward->toCsv();                      // bs_date,ad_date,weekday_nepali,weekday_english
 $ward->toIcs('Ward schedule');       // RFC 5545 iCalendar VEVENT
@@ -328,12 +348,12 @@ use Sambat\NepaliCalendar\Recurrence;
 
 $billing = Recurrence::monthly('2083-01-05')
     ->every(2)                    // every second month
-    ->until('2083-12-31')
+    ->until('2083-12-30')
     ->dates();                    // list<NepaliDate>
 
 $meetings = Recurrence::weekly('2083-01-01')
     ->on('monday', 'friday')      // or on(2, 6)
-    ->between('2083-01-01', '2083-12-31');
+    ->between('2083-01-01', '2083-12-30');
 
 foreach (Recurrence::daily('2083-01-01')->take(10) as $date) {
     // ...
@@ -396,7 +416,7 @@ $d->formatBoth(); // ['nepali' => 'सोमबार, फागुन ५, २�
 // ranged rules
 'end_date' => ['required', 'nepali_date_before:2083-04-01'],
 'start_date' => ['required', 'nepali_date_after:2083-01-01'],
-'event_date' => ['required', 'nepali_date_between:2083-01-01,2083-12-31'],
+'event_date' => ['required', 'nepali_date_between:2083-01-01,2083-12-30'],
 
 // or rule classes
 use Sambat\NepaliCalendar\Rules\NepaliDateRule;
@@ -409,7 +429,7 @@ use Sambat\NepaliCalendar\Rules\NepaliDateBetweenRule;
 'date' => ['required', new NepaliDateFormatRule('Y-m-d')],
 'date' => ['required', new NepaliDateBeforeRule('2083-04-01')],
 'date' => ['required', new NepaliDateAfterRule('2083-01-01')],
-'date' => ['required', new NepaliDateBetweenRule('2083-01-01', '2083-12-31')],
+'date' => ['required', new NepaliDateBetweenRule('2083-01-01', '2083-12-30')],
 ```
 
 ### Eloquent casts
@@ -439,7 +459,7 @@ Report::whereNepaliDate('bill_date', '2081-11-05')->get();
 Report::whereNepaliYear('bill_date', 2081)->get();
 Report::whereNepaliMonth('bill_date', 2081, 11)->get();
 Report::whereNepaliDay('bill_date', 2081, 11, 5)->get();
-Report::whereNepaliBetween('bill_date', '2081-07-01', '2081-09-30')->get();
+Report::whereNepaliBetween('bill_date', '2081-05-01', '2081-07-30')->get();
 Report::orderByNepaliDate('bill_date', 'desc')->get();
 ```
 

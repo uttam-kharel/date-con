@@ -6,6 +6,7 @@ use Sambat\NepaliCalendar\Enums\Season;
 use Sambat\NepaliCalendar\NepaliDate;
 use Sambat\NepaliCalendar\NepaliDateRange;
 use Sambat\NepaliCalendar\NepaliFiscalYear;
+use Sambat\NepaliCalendar\NepaliNumber;
 use Sambat\NepaliCalendar\Support\NumberConverter;
 
 if (! function_exists('nepali_date')) {
@@ -55,6 +56,16 @@ if (! function_exists('nepali_number')) {
     function nepali_number(string|int|float $value): string
     {
         return NumberConverter::toNepali($value);
+    }
+}
+
+if (! function_exists('nepali_number_words')) {
+    /**
+     * Spell a number out in Nepali (default) or English.
+     */
+    function nepali_number_words(int|string $value, string $language = 'nepali'): string
+    {
+        return NepaliNumber::toWords($value, $language);
     }
 }
 

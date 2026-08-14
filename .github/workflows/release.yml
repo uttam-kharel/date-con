@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.10.2) — used instead of the triggering tag'
+        required: false
 
 permissions:
   contents: write
@@ -25,7 +29,7 @@ jobs:
           tools: composer:v2
 
       - name: Check release version consistency
-        run: php bin/check-release.php "${{ github.ref_name }}"
+        run: php bin/check-release.php "${{ inputs.tag || github.ref_name }}"
 
       - name: Validate composer.json
         run: composer validate --strict --no-check-publish

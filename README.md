@@ -36,8 +36,9 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ **BS 2000–2100** — the range was extended with a verified, community-sourced year
 - ✅ Range operations (overlap/merge/gap), recurrence rules, CSV/iCal export, time diffs & bilingual `formatBoth()`
 - ✅ **Nepali culture & age** — seasons (ऋतु), rashi (zodiac), age at a date, birthdays, broken-down year/month/day diffs
-- ✅ **`NepaliNumber` engine** — Devanagari numerals, Indian (lakh/crore) grouping, number-to-words in Nepali & English for invoices
-- ✅ 176 tests / 2800+ assertions, O(1) conversions
+- ✅ **`NepaliNumber` engine** — Devanagari numerals, Indian (lakh/crore) grouping, number-to-words & currency (रुपैयाँ … पैसा मात्र) for invoices
+- ✅ **Relative dates** — parse `भोलि`, `हिजो`, `पर्सि`, `tomorrow`, `next week` …
+- ✅ 181 tests / 2800+ assertions, O(1) conversions
 
 ---
 
@@ -547,7 +548,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 176 tests, 2800+ assertions
+composer test        # 181 tests, 2800+ assertions
 composer pint        # Laravel code style
 ```
 

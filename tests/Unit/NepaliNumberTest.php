@@ -77,3 +77,22 @@ it('provides the nepali_number_words helper', function () {
     expect(nepali_number_words(125000))->toBe('एक लाख पच्चीस हजार')
         ->and(nepali_number_words(125000, 'english'))->toBe('one lakh twenty-five thousand');
 });
+
+it('formats currency with Indian grouping and decimals', function () {
+    expect(NepaliNumber::formatCurrency(125000.5))->toBe('रु. १,२५,०००.५०')
+        ->and(NepaliNumber::formatCurrency(125000.5, 'english'))->toBe('Rs. 1,25,000.50')
+        ->and(NepaliNumber::formatCurrency(0.5))->toBe('रु. ०.५०')
+        ->and(NepaliNumber::formatCurrency(1000))->toBe('रु. १,०००.००')
+        ->and(NepaliNumber::formatCurrency(-125000))->toBe('ऋण रु. १,२५,०००.००')
+        ->and(NepaliNumber::formatCurrency(-125000, 'english'))->toBe('-Rs. 1,25,000.00');
+});
+
+it('spells currency amounts in words', function () {
+    expect(NepaliNumber::currencyInWords(125000.5))->toBe('रुपैयाँ एक लाख पच्चीस हजार पचास पैसा मात्र')
+        ->and(NepaliNumber::currencyInWords(125000.5, 'english'))->toBe(
+            'Rupees one lakh twenty-five thousand and fifty paise only'
+        )
+        ->and(NepaliNumber::currencyInWords(1000))->toBe('रुपैयाँ एक हजार मात्र')
+        ->and(NepaliNumber::currencyInWords(1000, 'english'))->toBe('Rupees one thousand only')
+        ->and(NepaliNumber::currencyInWords(0.75, 'english'))->toBe('Rupees zero and seventy-five paise only');
+});

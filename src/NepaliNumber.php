@@ -147,6 +147,61 @@ final class NepaliNumber
         return self::words((int) $value, strtolower($language) === 'english' ? 'english' : 'nepali');
     }
 
+    /**
+     * Format a money amount with Indian grouping and two decimals:
+     *
+     *     NepaliNumber::formatCurrency(125000.5);   // रु. १,२५,०००.५०
+     *     NepaliNumber::formatCurrency(125000.5, 'english'); // Rs. 1,25,000.50
+     */
+    public static function formatCurrency(string|int|float $amount, string $language = 'nepali'): string
+    {
+        $english = strtolower($language) === 'english';
+        $negative = (float) $amount < 0;
+
+        [$int, $dec] = array_pad(explode('.', number_format(abs((float) $amount), 2, '.', '')), 2, '00');
+
+        $formatted = $english
+            ? 'Rs. '.self::format((int) $int, false).'.'.$dec
+            : 'रु. '.self::format((int) $int, true).'.'.self::toNepali($dec);
+
+        if ($negative) {
+            $formatted = $english ? '-'.$formatted : 'ऋण '.$formatted;
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Spell a money amount out in words (cheque / receipt style):
+     *
+     *     NepaliNumber::currencyInWords(125000.5);   // रुपैयाँ एक लाख पच्चीस हजार पचास पैसा मात्र
+     *     NepaliNumber::currencyInWords(125000.5, 'english'); // Rupees one lakh ... and fifty paise only
+     */
+    public static function currencyInWords(string|int|float $amount, string $language = 'nepali'): string
+    {
+        $english = strtolower($language) === 'english';
+
+        [$int, $dec] = array_pad(explode('.', number_format(abs((float) $amount), 2, '.', '')), 2, '00');
+        $intWords = self::words((int) $int, $english ? 'english' : 'nepali');
+        $decWords = self::words((int) $dec, $english ? 'english' : 'nepali');
+
+        if ($english) {
+            $out = 'Rupees '.$intWords;
+            if ((int) $dec > 0) {
+                $out .= ' and '.$decWords.' paise';
+            }
+
+            return $out.' only';
+        }
+
+        $out = 'रुपैयाँ '.$intWords;
+        if ((int) $dec > 0) {
+            $out .= ' '.$decWords.' पैसा';
+        }
+
+        return $out.' मात्र';
+    }
+
     private static function words(int $value, string $language): string
     {
         if (abs($value) > self::MAX_WORDS) {

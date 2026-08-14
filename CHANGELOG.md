@@ -16,6 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `RELEASING.md` is now the complete release handbook (rules, checklist, CI matrix,
   tag history, backfill, rollback, dataset governance).
 
+## [1.13.0] - 2026-08-14
+
+### Added
+
+- **Relative date parsing** — `NepaliDate::parse()` now accepts Nepali words
+  (`आज`, `हिजो`, `अस्ति`, `भोलि`, `पर्सि`, `परसि`) and English words
+  (`today`, `tomorrow`, `yesterday`, `next/last week|month|year`), with
+  month-end clamping via the existing BS arithmetic.
+- **Currency helpers on `NepaliNumber`** — `formatCurrency()`
+  (`रु. १,२५,०००.५०` / `Rs. 1,25,000.50`) and `currencyInWords()`
+  (`रुपैयाँ एक लाख पच्चीस हजार पचास पैसा मात्र` / `Rupees … and fifty paise only`)
+  for cheques, receipts and invoices.
+- 5 new tests (**181 tests, 2,845 assertions** in total).
+
 ## [1.12.0] - 2026-08-14
 
 ### Added

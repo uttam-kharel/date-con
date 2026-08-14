@@ -42,6 +42,15 @@ NepaliDate::fromAd('2026/01/01');         // = NepaliDate::fromAd('2026-01-01')
 // Note: parse() treats input as Bikram Sambat, fromAd() as Gregorian.
 NepaliDate::parse(['year' => 2081, 'month' => 11, 'day' => 28]);
 NepaliDate::parse([2081, 11, 28]);
+
+// Relative words — Nepali and English
+NepaliDate::parse('भोलि');      // tomorrow
+NepaliDate::parse('हिजो');      // yesterday
+NepaliDate::parse('अस्ति');     // two days ago
+NepaliDate::parse('पर्सि');     // in two days
+NepaliDate::parse('परसि');     // in three days
+NepaliDate::parse('next week'); // +1 week
+NepaliDate::parse('last month'); // −1 month (BS clamping)
 ```
 
 ## Other constructors

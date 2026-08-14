@@ -94,6 +94,15 @@ english_number('१२३४.५');      // '1234.5'
 
 $date->toNepaliNumerals();    // '२०८१-११-०५'
 $date->toEnglishNumerals();   // '2081-11-05'
+
+// The full NepaliNumber API — grouping, words and currency
+NepaliNumber::format(1250000);            // '१२,५०,०००'  (Indian lakh/crore grouping)
+NepaliNumber::toNepaliWords(125000);      // 'एक लाख पच्चीस हजार'
+NepaliNumber::toEnglishWords(125000);     // 'one lakh twenty-five thousand'
+NepaliNumber::formatCurrency(125000.5);   // 'रु. १,२५,०००.५०'
+NepaliNumber::formatCurrency(125000.5, 'english'); // 'Rs. 1,25,000.50'
+NepaliNumber::currencyInWords(125000.5);  // 'रुपैयाँ एक लाख पच्चीस हजार पचास पैसा मात्र'
+nepali_number_words(125000);              // 'एक लाख पच्चीस हजार' (helper)
 ```
 
 ## Bilingual output

@@ -53,6 +53,12 @@ final class Parser
             throw InvalidNepaliDateException::forValue($value);
         }
 
+        // Relative words: "भोलि", "हिजो", "tomorrow", "next week" ...
+        $relative = self::relativeDate($value);
+        if ($relative !== null) {
+            return $relative;
+        }
+
         // Accept Devanagari numerals transparently: "२०८१-११-०५"
         if (NumberConverter::containsNepaliNumerals($value)) {
             $value = NumberConverter::toEnglish($value);
@@ -92,6 +98,34 @@ final class Parser
         }
 
         throw InvalidNepaliDateException::forValue($value);
+    }
+
+    /**
+     * Resolve relative day/week/month words to a concrete date.
+     *
+     * Nepali: आज (today), हिजो (yesterday), अस्ति (2 days ago), भोलि
+     * (tomorrow), पर्सि (2 days ahead), परसि (3 days ahead). English:
+     * today / tomorrow / yesterday / next- and last-week|month|year.
+     */
+    private static function relativeDate(string $value): ?NepaliDate
+    {
+        $now = NepaliDate::now();
+
+        return match (mb_strtolower($value)) {
+            'today', 'आज', 'अहिले' => $now,
+            'tomorrow', 'भोलि' => $now->addDay(),
+            'पर्सि' => $now->addDays(2),
+            'परसि' => $now->addDays(3),
+            'yesterday', 'हिजो' => $now->subDay(),
+            'अस्ति' => $now->subDays(2),
+            'next week' => $now->addWeeks(1),
+            'last week' => $now->subWeeks(1),
+            'next month' => $now->addMonths(1),
+            'last month' => $now->subMonths(1),
+            'next year' => $now->addYears(1),
+            'last year' => $now->subYears(1),
+            default => null,
+        };
     }
 
     private static function monthFromDevanagari(string $name): int

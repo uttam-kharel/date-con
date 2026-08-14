@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Release hardening** — `bin/check-release.php` verifies a tag's semantic version,
+  the `VERSION` constant and the CHANGELOG entry before a release is created; the
+  `tests` workflow now also runs the full Laravel matrix against every `v*` tag push;
+  the `release` workflow gained a manual `workflow_dispatch` trigger.
+
 ## [1.10.1] - 2026-08-14
 
 ### Fixed

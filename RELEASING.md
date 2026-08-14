@@ -1,9 +1,24 @@
 # Releasing
 
 This project follows **Semantic Versioning** (see [CHANGELOG.md](CHANGELOG.md)) and
-releases directly from `main`. A release is an annotated git tag (`vX.Y.Z`); the
-`release` GitHub Actions workflow (`.github/workflows/release.yml`) runs the test
-suite on the tag and creates a GitHub Release with auto-generated notes.
+releases directly from `main`. A release is an annotated git tag (`vX.Y.Z`); pushing
+the tag triggers two workflows:
+
+- `tests` (`.github/workflows/tests.yml`) runs the **full Laravel 11–13 / PHP 8.2–8.5
+  matrix against the tagged code**;
+- `release` (`.github/workflows/release.yml`) **verifies the version is consistent**,
+  runs the suite, and creates the GitHub Release.
+
+The version check (`php bin/check-release.php`) fails the release unless:
+
+- the tag is a semantic version (`vX.Y.Z`, optional `-prerelease`);
+- `NepaliCalendarServiceProvider::VERSION` matches the tag (for `v1.0.0+`; pre-1.0
+  milestone tags may carry a forward constant, e.g. `v0.9.0` had `VERSION = '1.0.0'`);
+- `CHANGELOG.md` has a `## [X.Y.Z]` entry (required for `v1.2.0+`).
+
+Run it locally before tagging: `php bin/check-release.php v1.10.2`. The `release`
+workflow also accepts `workflow_dispatch`, so a release can be re-run from the
+Actions tab if a step failed transiently.
 
 ## Deciding the version
 
@@ -43,9 +58,11 @@ Pre-releases use the exact tag names `v2.0.0-beta.1`, `v2.0.0-rc.1` — never
    git tag -a vX.Y.Z -m "vX.Y.Z — Short release summary"
    ```
 
-6. **Push** the branch and the tag. The `release` workflow then runs the suite
-   on the tag and publishes the GitHub Release:
+6. **Push** the branch and the tag. The `tests` workflow runs the full matrix on the
+   tag, the `release` workflow checks the version, runs the suite and publishes the
+   GitHub Release:
    ```bash
+   php bin/check-release.php vX.Y.Z   # optional, runs again in CI
    git push origin main
    git push origin vX.Y.Z
    ```

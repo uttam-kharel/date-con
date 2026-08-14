@@ -35,8 +35,9 @@ this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.
 | **v1.11.0** | ^8.1 | **Nepali culture & age** — `Season` (ऋतु) and `Rashi` (zodiac) enums, `season()` / `rashi()`, `ageAt()`, `isBirthday()`, `nextBirthday()`, `diffInYearsMonthsDays()`, `InvalidNepaliMonthException`, `bs_season()` / `bs_rashi()` helpers — 167 tests | ✅ tagged |
 | **v1.12.0** | ^8.1 | **`NepaliNumber` engine** — Devanagari digits, Indian (lakh/crore) `format()`, English + Nepali number-to-words up to 99 crore (full irregular 21–99 table), `nepali_number_words()` helper — 176 tests | ✅ tagged |
 | **v1.13.0** | ^8.1 | **Relative dates & currency** — parse `भोलि`/`हिजो`/`पर्सि`/`next week`…, `NepaliNumber::formatCurrency()` + `currencyInWords()` (रुपैयाँ … पैसा मात्र) — 181 tests | ✅ tagged |
+| **v1.14.0** | ^8.1 | **Reverse parsing & period comparisons** — `createFromFormat()` (tokens + Devanagari/roman month names), `isSameWeek()` / `isSameQuarter()` / `isSameFiscalYear()` — 198 tests | ✅ tagged |
 
-Current baseline: **99 commits, 18 annotated tags, 181 tests / 2,845 assertions,
+Current baseline: **100 commits, 19 annotated tags, 198 tests / 2,873 assertions,
 Pint clean, `composer validate --strict` green, every tag verified standalone.**
 
 The conversion range is **BS 2000–2100 / AD 1943–2044**. The dataset — and its

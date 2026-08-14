@@ -16,6 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `RELEASING.md` is now the complete release handbook (rules, checklist, CI matrix,
   tag history, backfill, rollback, dataset governance).
 
+## [1.14.0] - 2026-08-14
+
+### Added
+
+- **`NepaliDate::createFromFormat()`** — the reverse of `format()`. Parses a BS
+  date from a format string with `Y/y`, `m/n`, `d/j`, `F/M` tokens; month names
+  accept Devanagari (`साउन`) and romanized (`Shrawan` / `Shr`) forms; Devanagari
+  numerals are transparent; other characters are matched literally (`\\` escapes).
+- **Period comparisons** — `isSameWeek()`, `isSameQuarter()` and
+  `isSameFiscalYear()` alongside the existing `isSameDay()` / `isSameMonth()` /
+  `isSameYear()`.
+- 17 new tests (**198 tests, 2,873 assertions** in total).
+
 ## [1.13.0] - 2026-08-14
 
 ### Added

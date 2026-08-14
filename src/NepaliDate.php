@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
+use Sambat\NepaliCalendar\Constants\CalendarData;
 use Sambat\NepaliCalendar\Enums\DateFormat;
 use Sambat\NepaliCalendar\Enums\Rashi;
 use Sambat\NepaliCalendar\Enums\Season;
@@ -94,6 +95,108 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public static function fromBs(int $year, int $month, int $day, ?CarbonInterface $time = null): self
     {
         return new self($year, $month, $day, $time);
+    }
+
+    /**
+     * Build a BS date from a format string — the reverse of format().
+     *
+     * Interpreted tokens: Y (4-digit year), y (2-digit year), m/n (month),
+     * d/j (day), F (full month name), M (short month name). F/M accept both
+     * Devanagari (साउन) and romanized (Shrawan / Shr) names; numerals may be
+     * Devanagari. All other characters are matched literally; prefix a
+     * character with a backslash to force literal interpretation.
+     */
+    public static function createFromFormat(string $format, string $value): self
+    {
+        $value = trim($value);
+
+        // Month-name lookup: name => BS month index (1-12).
+        $names = [];
+        foreach (CalendarData::MONTHS_DEVANAGARI as $month => $name) {
+            $names[$name] = $month;
+        }
+        foreach (CalendarData::MONTHS_DEVANAGARI_FORMAL as $month => $name) {
+            $names[$name] = $month;
+        }
+        foreach (CalendarData::MONTHS_ROMAN as $month => $name) {
+            $names[$name] = $month;
+            $names[substr($name, 0, 3)] = $month;
+        }
+        uksort($names, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
+
+        $monthPattern = '(?:'.implode('|', array_map(static fn (string $name): string => preg_quote($name, '~'), array_keys($names))).')';
+
+        $regex = '';
+        $captures = []; // token => capture index (first occurrence wins)
+        $length = strlen($format);
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $format[$i];
+
+            if ($char === '\\') {
+                $regex .= preg_quote($format[$i + 1] ?? '', '~');
+                $i++;
+
+                continue;
+            }
+
+            switch ($char) {
+                case 'Y':
+                    $regex .= '(\d{4})';
+                    break;
+                case 'y':
+                    $regex .= '(\d{2})';
+                    break;
+                case 'm':
+                case 'n':
+                    $regex .= '(\d{1,2})';
+                    break;
+                case 'd':
+                case 'j':
+                    $regex .= '(\d{1,2})';
+                    break;
+                case 'F':
+                case 'M':
+                    $regex .= '('.$monthPattern.')';
+                    break;
+                default:
+                    $regex .= preg_quote($char, '~');
+
+                    continue 2;
+            }
+
+            $captures[$char] ??= count($captures) + 1;
+        }
+
+        // Devanagari digits in the value are transparently converted.
+        if (NumberConverter::containsNepaliNumerals($value)) {
+            $value = NumberConverter::toEnglish($value);
+        }
+
+        if (preg_match('~^'.$regex.'$~u', $value, $matches) !== 1) {
+            throw InvalidNepaliDateException::forValue($value);
+        }
+
+        $year = $month = $day = null;
+
+        foreach ($captures as $token => $index) {
+            $raw = $matches[$index];
+
+            match ($token) {
+                'Y' => $year = (int) $raw,
+                'y' => $year = 2000 + (int) $raw,
+                'm', 'n' => $month = (int) $raw,
+                'd', 'j' => $day = (int) $raw,
+                'F', 'M' => $month = $names[$raw] ?? null,
+                default => null,
+            };
+        }
+
+        if ($year === null || $month === null || $day === null) {
+            throw InvalidNepaliDateException::forValue($value);
+        }
+
+        return self::fromBs($year, $month, $day);
     }
 
     /**
@@ -828,6 +931,24 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public function isSameYear(self $other): bool
     {
         return $this->year === $other->year;
+    }
+
+    /** Whether both dates fall in the same week of the BS year. */
+    public function isSameWeek(self $other): bool
+    {
+        return $this->isSameYear($other) && $this->weekOfYear() === $other->weekOfYear();
+    }
+
+    /** Whether both dates fall in the same calendar quarter (Baisakh-Jeth = Q1). */
+    public function isSameQuarter(self $other): bool
+    {
+        return $this->isSameYear($other) && $this->quarter() === $other->quarter();
+    }
+
+    /** Whether both dates fall in the same Nepali fiscal year (Shrawan based). */
+    public function isSameFiscalYear(self $other): bool
+    {
+        return $this->fiscalYear()->year() === $other->fiscalYear()->year();
     }
 
     public function isBefore(mixed $other): bool

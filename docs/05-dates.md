@@ -52,7 +52,18 @@ NepaliDate::parse('2081-11-05');        // any format — see conversion docs
 NepaliDate::fromTimestamp(1740000000);
 NepaliDate::fromCarbon($carbon);
 NepaliDate::fromArray(['year' => 2081, 'month' => 11, 'day' => 5]);
+
+// Reverse of format(): parse a value against an explicit format string
+NepaliDate::createFromFormat('Y-m-d', '2081-11-05');      // year-month-day
+NepaliDate::createFromFormat('j F Y', '5 मंसिर 2081');     // Devanagari month
+NepaliDate::createFromFormat('j F Y', '5 Mangsir 2081');   // romanized month
+NepaliDate::createFromFormat('d/m/Y', '०५/११/२०८१');      // Devanagari digits
 ```
+
+`createFromFormat()` interprets `Y`/`y` (year), `m`/`n` (month), `d`/`j` (day) and
+`F`/`M` (month name — Devanagari or romanized); every other character is matched
+literally and `\` escapes the next character. Unlike `format()`'s other tokens
+(weekdays, ordinal suffixes…), only these seven decide the date.
 
 ## Arithmetic (immutable)
 
@@ -99,6 +110,7 @@ $d->copy();            // explicit clone
 $d->isBefore($other);  $d->isAfter($other);
 $d->isBetween($a, $b);                      // inclusive
 $d->isSameDay($other); $d->isSameMonth($other); $d->isSameYear($other);
+$d->isSameWeek($other);   $d->isSameQuarter($other);   $d->isSameFiscalYear($other);
 $d->equals('2081-11-05');                   // accepts anything parse() accepts
 $d->compareTo($other);                      // -1 / 0 / 1
 

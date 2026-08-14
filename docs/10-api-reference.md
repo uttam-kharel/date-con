@@ -15,7 +15,8 @@ Compact reference of every public class and method. All examples assume
 | `NepaliDate::today()` | today in BS (no time) |
 | `NepaliDate::fromBs(int $y, int $m, int $d, ?CarbonInterface $time = null)` | from BS parts |
 | `NepaliDate::fromAd(mixed $value)` | from any AD value (Carbon, string, timestamp) |
-| `NepaliDate::parse(mixed $value)` | flexible parse — see [conversion](03-conversion.md) |
+| `NepaliDate::parse(mixed $value)` | flexible parse (incl. relative words — see [conversion](03-conversion.md)) |
+| `NepaliDate::createFromFormat(string $fmt, string $value)` | parse against a format — the reverse of `format()` (`Y/y`, `m/n`, `d/j`, `F/M` tokens, Devanagari or romanized month names, Devanagari digits, `\\` escapes) |
 | `NepaliDate::fromTimestamp(int $ts)` | from unix timestamp |
 | `NepaliDate::fromCarbon(CarbonInterface $c)` | from Carbon |
 | `NepaliDate::fromArray(array $value)` | `['year'=>…,'month'=>…,'day'=>…]` or `[y,m,d]` |
@@ -24,9 +25,10 @@ Compact reference of every public class and method. All examples assume
 
 ### Getters
 
-`year()` · `month()` · `day()` · `weekDay()` · `weekDayIso()` · `dayOfYear()` ·
-`daysInMonth()` · `daysInYear()` · `isLeapYear()` · `monthName(?lang)` ·
-`monthShortName(?lang)` · `weekDayName(?lang)` · `weekDayShort(?lang)` ·
+`year()` · `month()` · `day()` · `quarter()` · `fiscalQuarter()` · `fiscalYear()` ·
+`weekDay()` · `weekDayIso()` · `weekOfYear()` · `dayOfYear()` · `daysInMonth()` ·
+`daysInYear()` · `isLeapYear()` · `monthName(?lang)` · `monthShortName(?lang)` ·
+`weekDayName(?lang)` · `weekDayShort(?lang)` · `season()` (ऋतु) · `rashi()` (zodiac) ·
 `ad()` · `timestamp()` · `age()`
 
 ### Formatting
@@ -53,16 +55,28 @@ Compact reference of every public class and method. All examples assume
 ### Comparison
 
 `isBefore` · `isAfter` · `isBetween($a, $b)` · `isSameDay` · `isSameMonth` ·
-`isSameYear` · `equals(mixed)` · `compareTo(mixed)` · `isToday` · `isTomorrow` ·
-`isYesterday` · `isPast` · `isFuture` · `isWeekday` · `isWeekend` · `isHoliday` ·
-`isBusinessDay` · `isWorkingDay`
+`isSameYear` · `isSameWeek` · `isSameQuarter` · `isSameFiscalYear` · `equals(mixed)` ·
+`compareTo(mixed)` · `isToday` · `isTomorrow` · `isYesterday` · `isPast` · `isFuture` ·
+`isWeekday` · `isWeekend` · `isHoliday` · `isBusinessDay` · `isWorkingDay`
 
 ### Navigation & diffs
 
 `tomorrow()` · `yesterday()` · `addBusinessDays(int)` · `subBusinessDays(int)` ·
 `businessDaysUntil(mixed)` · `diffInDays/months/years/weeks/hours/minutes/seconds`
-(`(mixed $other, bool $absolute = true)`) · `diffForHumans(?lang)` ·
-`fiscalYear()` · `fiscalQuarter()` · `rangeTo(mixed $end)`
+(`(mixed $other, bool $absolute = true)`) · `diffInYearsMonthsDays(?self, bool)`
+(`[years, months, days]`) · `diffForHumans(?lang)` · `fiscalYear()` ·
+`fiscalQuarter()` · `rangeTo(mixed $end)`
+
+### Age & birthdays
+
+`age()` · `ageAt(mixed $other)` · `ageInYearsMonthsDays(?self $at = null)` (array) ·
+`isBirthday(?self $today = null)` · `nextBirthday(?self $from = null)`
+
+### Culture
+
+`season(): Season` — the six ऋतु by BS month · `rashi(): Rashi` — the twelve zodiac
+signs by BS month (both localizable via the enum's `devanagari()` / `roman()` /
+`english()` / `name(?lang)` methods)
 
 ---
 
@@ -139,7 +153,36 @@ Constant: `NepaliFiscalYear::START_MONTH = 4` (Shrawan).
 ### `Enums\NepaliMonth`
 
 `Baisakh = 1` … `Chaitra = 12` (Baisakh, Jestha, Ashadh, Shrawan, Bhadra, Ashwin,
-Kartik, Mangsir, Poush, Magh, Falgun, Chaitra)
+Kartik, Mangsir, Poush, Magh, Falgun, Chaitra) — plus `devanagari()` / `roman()` /
+`english()` name helpers.
+
+### `Enums\Season`
+
+`Grishma` · `Barsha` · `Sharad` · `Hemanta` · `Shishir` · `Vasanta`, with
+`devanagari()` (वर्षा…) / `roman()` / `english()` / `name(?lang)` / `fromMonth(int)`.
+
+### `Enums\Rashi`
+
+`Mesh` … `Meena` (the twelve zodiac signs, `मेष`…`मीन`), with `devanagari()` /
+`roman()` / `english()` / `name(?lang)` / `fromMonth(int)`.
+
+---
+
+## `NepaliNumber` — numerals & number-to-words
+
+| Method | Description |
+|---|---|
+| `NepaliNumber::toNepali(mixed)` | Devanagari digits — `toNepali(2083)` → `२०८३` |
+| `NepaliNumber::toEnglish(mixed)` | reverse — `toEnglish('२०८३')` → `2083` |
+| `NepaliNumber::containsNepali(string)` | has Devanagari digits? |
+| `NepaliNumber::format(int\|string, bool $devanagari = true, string $sep = ',')` | Indian lakh/crore grouping — `12,50,000` / `१२,५०,०००` |
+| `NepaliNumber::toEnglishWords(mixed)` | `125000` → `one lakh twenty-five thousand` |
+| `NepaliNumber::toNepaliWords(mixed)` | `125000` → `एक लाख पच्चीस हजार` |
+| `NepaliNumber::toWords(mixed, string $lang = 'nepali')` | language-switchable words |
+| `NepaliNumber::formatCurrency(mixed, string $lang = 'nepali')` | `रु. १,२५,०००.५०` / `Rs. 1,25,000.50` |
+| `NepaliNumber::currencyInWords(mixed, string $lang = 'nepali')` | `रुपैयाँ … पैसा मात्र` for cheques & invoices |
+
+Supports negatives (`ऋण` / `minus`), decimals and values up to 99 crore.
 
 ---
 
@@ -190,3 +233,14 @@ Blade directives: `@nepaliDate($value, $format = null)` · `@nepaliDateHuman($va
 Carbon macros: `toNepaliDate()` · `formatNepali($format)`.
 
 Artisan: `nepali:convert` · `nepali:info` · `nepali:seed [--fresh] [--connection=]`.
+
+---
+
+## Global helpers
+
+`nepali_date(?$value)` · `ad_to_bs($date, $fmt = 'Y-m-d')` · `bs_to_ad($date, $fmt)` ·
+`bs_today($fmt = 'Y-m-d')` · `nepali_number($value)` · `nepali_number_words($value,
+$lang = 'nepali')` · `english_number($value)` · `bs_diff_for_humans($from, ?$to)` ·
+`bs_days_in_month($y, $m)` · `bs_days_in_year($y)` · `bs_is_leap_year($y)` ·
+`bs_age($birthDate)` · `bs_season(?$date)` · `bs_rashi(?$date)` ·
+`bs_fiscal_year(?$date)` · `bs_date_range($start, $end)`

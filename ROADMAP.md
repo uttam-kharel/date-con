@@ -9,10 +9,10 @@ that must happen *between* releases.
 
 ---
 
-## 1. Where we are today (v1.10.0)
+## 1. Where we are today (v1.14.0)
 
 Development started in **December 2020**, right after PHP 8.0's release (Nov 26, 2020), and
-has run continuously since — 75 commits, one feature at a time, from the first scaffold to
+has run continuously since — 100 commits, one feature at a time, from the first scaffold to
 this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.0`
 (formatting engine) and `v0.9.0` (Laravel integration).
 
@@ -106,9 +106,9 @@ EOL. PHP 8.6 (beta as of late 2026) becomes a CI target when 2.x+ lands.
 
 | Version | 🎯 Features | Effort |
 |---|---|---|
-| **v1.10.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
-| **v1.11.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
-| **v1.12.0** | **Recurrence + export polish** — weekly `on()` already shipped; add holiday-aware recurrence (`skipWeekends()`, `skipHolidays()`) and ics/calendar export for `Recurrence` | S |
+| **v1.15.0** | **Recurrence + export polish** — weekly `on()` already shipped; add holiday-aware recurrence (`skipWeekends()`, `skipHolidays()`) and ics/calendar export for `Recurrence` | S |
+| **v1.16.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
+| **v1.17.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
 
 ### 4.3 Planned — 2.x · architecture release (PHP 8.2+, breaking changes land here, not randomly in 1.x)
 
@@ -227,8 +227,8 @@ every tag.
 | When | Milestones |
 |---|---|
 | 2026 Q3–Q4 | ✅ v1.3.0 (fiscal year, quarters, ranges) · ✅ v1.4.0 (holidays, business days) · ✅ v1.5.0 (casts, validation, query helpers) · ✅ v1.6.0 (format presets) · ✅ v1.7.0 (dataset to BS 2100, release workflow) · ✅ v1.8.0 (range ops, day helpers) · ✅ v1.9.0 (recurrence, export) |
-| 2027 H1 | v1.10.0 (Livewire pickers) · v1.11.0 (Filament pickers) |
-| 2027 H2 | v1.12.0 (recurrence polish) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
+| 2027 H1 | v1.15.0 (recurrence polish) · v1.16.0 (Livewire pickers) |
+| 2027 H2 | v1.17.0 (Filament pickers) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
 | 2028 | v2.1–v2.6 (formatting, locales, holidays, performance, recurrence, query API) |
 | 2028–2029 | v3.0 ecosystem split · CLI · API · docs site · holidays package |
 | 2029+ | v4.0 — modern PHP floor |

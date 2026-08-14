@@ -133,7 +133,7 @@ for t in $(git tag); do
 done
 ```
 
-All 15 tags pass the current rules:
+All 19 tags pass the current rules:
 
 | Tag | Tagged | Provider `VERSION` | CHANGELOG entry | GitHub Release |
 |---|---|---|---|---|
@@ -152,9 +152,13 @@ All 15 tags pass the current rules:
 | v1.9.0 | 2026-08-14 | `1.9.0` ✓ | ✓ | ❌ not created |
 | v1.10.0 | 2026-08-14 | `1.10.0` ✓ | ✓ | ✅ created |
 | v1.10.1 | 2026-08-14 | `1.10.1` ✓ | ✓ | ✅ created |
+| v1.11.0 | 2026-08-14 | `1.11.0` ✓ | ✓ | ✅ auto-created |
+| v1.12.0 | 2026-08-14 | `1.12.0` ✓ | ✓ | ✅ auto-created |
+| v1.13.0 | 2026-08-14 | `1.13.0` ✓ | ✓ | ✅ auto-created |
+| v1.14.0 | 2026-08-14 | `1.14.0` ✓ | ✓ | ✅ auto-created |
 
-**Backfilling GitHub Releases** for the 13 older tags: the release workflow
-did not exist at their commits, so pushing them again does not create runs.
+**Backfilling GitHub Releases** for the 13 older tags (v0.1.0 … v1.9.0): the release
+workflow did not exist at their commits, so pushing them again does not create runs.
 Backfill either from the web UI (Releases → *Draft a new release* → choose
 tag, paste the CHANGELOG section) or via the API with a token:
 

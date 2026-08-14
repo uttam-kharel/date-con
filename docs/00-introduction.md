@@ -1,28 +1,29 @@
 # Introduction
 
 **sambat/nepali-calendar** is a complete Bikram Sambat (BS / Nepali) date & time package
-for PHP 8.1 – 8.5. It works in plain PHP **and** Laravel 10 – 12, with Laravel support
+for PHP 8.1 – 8.5. It works in plain PHP **and** Laravel 10 – 13, with Laravel support
 layered on top rather than required.
 
 It was written after a detailed study of the two existing Nepali date packages
 (`hmis/nepali-date` and `mr.incognito/date-converter`) and fixes every gap found in them:
 no mandatory database, O(1) conversions, typed value objects, real validation, formatting,
-arithmetic, localization, and 176 tests with 2,800+ assertions.
+arithmetic, localization, and 198 tests with 2,873 assertions.
 
 ## Feature inventory
 
 | Area | What you get |
 |---|---|
 | **Conversion** | AD ⇄ BS, O(1), verified anchors, range BS 2000–2100 ⇄ AD 1943–2044 |
-| **Parsing** | `Y-m-d`, `/`, compact, Devanagari digits, month names, arrays, timestamps, Carbon |
+| **Parsing** | `Y-m-d`, `/`, compact, Devanagari digits, month names, relative words (भोलि / next week…), `createFromFormat()`, arrays, timestamps, Carbon |
 | **Date object** | Immutable `NepaliDate` value object with full getters, arithmetic, comparison |
 | **Formatting** | Full PHP `date()` token set + escapes, Devanagari numerals, 3 languages, named presets |
 | **Localization** | Nepali (Devanagari), Romanized, English names; `formatBoth()` bilingual output |
 | **Arithmetic** | `addDays`/`subMonths`/`addYears`/… with month-length clamping (all immutable) |
 | **Periods** | `startOf*`/`endOf*`, calendar grids, first/last of month, `with*` copies |
 | **Diffs** | Days/months/years/weeks/hours/minutes/seconds, `diffForHumans()`, `age()`, broken-down year/month/day diffs |
+| **Comparison** | `isSameDay/Month/Year/Week/Quarter/FiscalYear`, before/after/between, equality |
 | **Culture** | Nepali seasons (ऋतु) and rashis (zodiac), birthdays, age at a given date |
-| **Numbers** | `NepaliNumber` — Devanagari digits, Indian (lakh/crore) grouping, number-to-words in Nepali and English |
+| **Numbers** | `NepaliNumber` — Devanagari digits, Indian (lakh/crore) grouping, number-to-words, currency formatting & words (रुपैयाँ … पैसा मात्र) |
 | **Ranges** | `NepaliDateRange`: iteration, slicing, overlap/merge/intersection/gap, export |
 | **Fiscal year** | Shrawan-based `NepaliFiscalYear` (`2083/84`), quarters, quarter ranges |
 | **Business days** | Configurable weekends + holidays, `addBusinessDays()`, counting on ranges |

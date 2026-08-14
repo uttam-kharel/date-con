@@ -7,10 +7,13 @@ namespace Sambat\NepaliCalendar\Constants;
 /**
  * Static calendar data for the Bikram Sambat calendar.
  *
- * The month table is the widely used, observation-based record of BS month
- * lengths for the years 2000-2099. The anchor BS 2000-01-01 equals
- * AD 1943-04-14; every conversion in this package is verified against
- * independently known real-world dates (e.g. BS 2081-01-01 = AD 2024-04-13).
+ * The month table covers BS 2000-2100. Years 2000-2099 are the widely used,
+ * observation-based record that most Nepali date packages share; year 2100
+ * is the community-verified continuation (Nepal Panchanga Nirnayak Samiti
+ * based, cross-checked against nepali-calendar.rat32.com which places
+ * Baisakh 1 2100 on April 14 2043, one day after our verified 2099-12-30 =
+ * 2043-04-13 boundary). The anchor BS 2000-01-01 equals AD 1943-04-14;
+ * every conversion is verified against independently known dates.
  */
 final class CalendarData
 {
@@ -18,7 +21,7 @@ final class CalendarData
     public const BS_MIN_YEAR = 2000;
 
     /** Last supported BS year. */
-    public const BS_MAX_YEAR = 2099;
+    public const BS_MAX_YEAR = 2100;
 
     /** BS 2000-01-01 in the Gregorian calendar. */
     public const BS_EPOCH_AD_DATE = '1943-04-14';
@@ -129,6 +132,7 @@ final class CalendarData
         2097 => [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30],
         2098 => [31, 31, 32, 31, 31, 31, 29, 30, 29, 30, 29, 31],
         2099 => [31, 31, 32, 31, 31, 31, 30, 29, 29, 30, 30, 30],
+        2100 => [31, 32, 31, 32, 30, 31, 30, 29, 30, 29, 30, 30],
     ];
 
     /** @var array<int, string> Devanagari month names, 1-indexed. */

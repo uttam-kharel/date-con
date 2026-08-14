@@ -4,6 +4,11 @@ Everything from the other pages works in Laravel; this page covers the Laravel-s
 surface: validation, Eloquent casts, query helpers, Blade, Carbon macros, artisan
 commands, the facade, and the global helpers.
 
+> Supported on **Laravel 10 – 13** (including the current 13.x release line). The provider,
+> facade, casts, validation rules and query macros use only stable framework APIs — the
+> package is tested against each major in CI, with the newest Laravel exercised on
+> PHP 8.4 / 8.5.
+
 ## Facade
 
 ```php

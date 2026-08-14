@@ -1,7 +1,7 @@
 # 📅 Nepali Calendar (sambat/nepali-calendar)
 
 [![PHP](https://img.shields.io/badge/PHP-8.1%20%E2%80%93%208.5-777BB4?logo=php&logoColor=white)](https://www.php.net/)
-[![Laravel](https://img.shields.io/badge/Laravel-10%20%E2%80%93%2012-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![Laravel](https://img.shields.io/badge/Laravel-10%20%E2%80%93%2013-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 [![Code style](https://img.shields.io/badge/code%20style-Laravel%20Pint-FF2D20)](https://laravel.com/docs/pint)
 
@@ -547,8 +547,9 @@ composer test        # 151 tests, 2700+ assertions
 composer pint        # Laravel code style
 ```
 
-Supported PHP versions (**8.1 – 8.5**) and Laravel versions (10 – 12) are verified in CI
-on every push — see [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+Supported PHP versions (**8.1 – 8.5**) and Laravel versions (**10 – 13**, including the
+current release line) are verified in CI on every push — see
+[`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
 ## Contributing
 

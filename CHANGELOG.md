@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-08-14
+
+### Added
+
+- **Laravel 13 support** — `illuminate/contracts` and `illuminate/support` now
+  accept `^13.0`, so the package installs and runs on the current Laravel release
+  line with no code changes (the provider, facade, casts, validation rules and
+  query macros use only stable framework APIs).
+- **Full Laravel test matrix in CI** — every supported major (10, 11, 12, 13) is
+  now exercised explicitly across the PHP lines it supports, with the newest
+  Laravel 13.x verified on PHP 8.4 / 8.5 (the dev toolchain upgraded to
+  testbench 11 and Pest 4/5).
+
+### Changed
+
+- Dev dependencies widened so the suite can run on any supported combination:
+  `orchestra/testbench` `^8.0 – ^11.0`, `pestphp/pest` `^2.0 – ^5.0`,
+  `pestphp/pest-plugin-laravel` `^2.4 – ^5.0`.
+- Version support docs (README, installation and Laravel guides) now state
+  **Laravel 10 – 13**.
+
+No API changes — this release is a compatibility and tooling update (**151 tests,
+2,713 assertions** verified against Laravel 13.25).
+
 ## [1.9.0] - 2026-08-14
 
 ### Added

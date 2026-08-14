@@ -6,9 +6,22 @@
 composer require sambat/nepali-calendar
 ```
 
-- **Laravel (10 – 12):** the service provider and facade are auto-discovered. No manual
+- **Laravel (10 – 13):** the service provider and facade are auto-discovered. No manual
   registration needed.
 - **Plain PHP:** everything works out of the box. No database, no container, no setup.
+
+## Version support
+
+| Component | Supported |
+|---|---|
+| PHP | 8.1, 8.2, 8.3, 8.4, 8.5 |
+| Laravel | 10, 11, 12, 13 (current) |
+| illuminate/contracts & illuminate/support | ^10.0 – ^13.0 |
+| Carbon | ^2.72 and ^3.0 |
+
+The newest Laravel major (13) is tested in CI on PHP 8.4 and 8.5; older majors are
+covered on the PHP lines they support. No code changes are needed when upgrading
+between supported Laravel versions.
 
 ## Publish config (Laravel only, optional)
 

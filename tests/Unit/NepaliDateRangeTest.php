@@ -155,6 +155,24 @@ it('samples every N-th day', function () {
     expect(fn () => $range->daysEvery(0))->toThrow(InvalidNepaliDateException::class);
 });
 
+it('exports ranges as CSV and iCalendar', function () {
+    $range = NepaliDateRange::between('2081-11-05', '2081-11-06');
+
+    $csv = $range->toCsv();
+    $rows = explode("\n", trim($csv));
+    expect($rows[0])->toBe('bs_date,ad_date,weekday_nepali,weekday_english');
+    expect($rows[1])->toContain('2081-11-05');
+    expect($rows[1])->toContain('2025-02-17');
+    expect($rows[2])->toContain('2081-11-06');
+
+    $ics = $range->toIcs('Test event');
+    expect($ics)->toContain('BEGIN:VCALENDAR');
+    expect($ics)->toContain('END:VCALENDAR');
+    expect($ics)->toContain('DTSTART;VALUE=DATE:20250217');
+    expect($ics)->toContain('DTEND;VALUE=DATE:20250219'); // exclusive end
+    expect($ics)->toContain('SUMMARY:Test event');
+});
+
 it('counts business days, weekends and holidays inside a range', function () {
     HolidayRepository::setInstance(HolidayRepository::fromArray([
         '2081-11-07' => 'Test Holiday', // Wednesday

@@ -1,5 +1,6 @@
 <?php
 
+use Sambat\NepaliCalendar\Enums\DateFormat;
 use Sambat\NepaliCalendar\NepaliDate;
 
 it('formats basic date tokens', function () {
@@ -54,6 +55,28 @@ it('formats time tokens from the AD instant', function () {
     expect($date->format('H:i:s', null, false))->toBe('14:30:45');
     expect($date->format('h:i A', null, false))->toBe('02:30 PM');
     expect($date->format('g:i a', null, false))->toBe('2:30 pm');
+});
+
+it('formats with named presets', function () {
+    $date = NepaliDate::parse('2081-11-05'); // Monday 2025-02-17
+
+    expect($date->formatPreset(DateFormat::SHORT))->toBe('२०८१-११-०५');
+    expect($date->formatPreset(DateFormat::MEDIUM))->toBe('२०८१ फागुन ०५');
+    expect($date->formatPreset(DateFormat::LONG))->toBe('फागुन ५, २०८१');
+    expect($date->formatPreset(DateFormat::FULL))->toBe('सोमबार, फागुन ५, २०८१');
+
+    expect($date->formatPreset(DateFormat::SHORT, null, false))->toBe('2081-11-05');
+    expect($date->formatPreset(DateFormat::FULL, 'english', false))->toBe('Monday, February 17, 2025');
+    expect($date->formatPreset(DateFormat::FULL, 'roman', false))->toBe('Sombaar, Falgun 5, 2081');
+});
+
+it('formats datetime and time presets from the AD instant', function () {
+    $date = NepaliDate::parse('2081-11-05 14:30:45');
+
+    expect($date->formatPreset(DateFormat::DATETIME_SHORT, null, false))->toBe('2081-11-05 14:30');
+    expect($date->formatPreset(DateFormat::DATETIME_FULL, 'english', false))->toBe('Monday, February 17, 2025 14:30:45');
+    expect($date->formatPreset(DateFormat::TIME_SHORT, null, false))->toBe('14:30');
+    expect($date->formatPreset(DateFormat::TIME_FULL, null, false))->toBe('2:30:45 PM');
 });
 
 it('formats accessor names directly', function () {

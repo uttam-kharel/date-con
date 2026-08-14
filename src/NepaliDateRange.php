@@ -241,6 +241,56 @@ final class NepaliDateRange implements Arrayable, Countable, IteratorAggregate, 
         );
     }
 
+    /**
+     * Export the range as CSV rows (bs_date, ad_date, weekday in Nepali
+     * and English) — handy for reports and spreadsheets.
+     */
+    public function toCsv(string $separator = ',', bool $includeHeader = true): string
+    {
+        $escape = fn (string $value) => str_contains($value, $separator) || str_contains($value, '"')
+            ? '"'.str_replace('"', '""', $value).'"'
+            : $value;
+
+        $lines = $includeHeader ? ['bs_date'.$separator.'ad_date'.$separator.'weekday_nepali'.$separator.'weekday_english'] : [];
+
+        foreach ($this->days() as $date) {
+            $lines[] = implode($separator, [
+                $date->toDateString(),
+                $date->formatAd('Y-m-d'),
+                $escape($date->weekDayName('nepali')),
+                $escape($date->weekDayName('english')),
+            ]);
+        }
+
+        return implode("\n", $lines)."\n";
+    }
+
+    /**
+     * Export the range as an RFC 5545 iCalendar (a single VEVENT spanning
+     * start to end, exclusive end) for calendar apps and exports.
+     */
+    public function toIcs(?string $title = null, string $productId = '-//Sambat//Nepali Calendar//EN'): string
+    {
+        $startAd = $this->start->ad();
+        $endAd = $this->end->ad()->addDay();
+        $summary = str_replace(["\r", "\n", ','], ['', '', '\\,'], $title
+            ?? "Nepali range {$this->start->toDateString()} to {$this->end->toDateString()}");
+
+        return implode("\r\n", [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:'.$productId,
+            'BEGIN:VEVENT',
+            'UID:nepali-calendar-'.md5($this->start->toDateString().'-'.$this->end->toDateString()),
+            'DTSTAMP:'.gmdate('Ymd\THis\Z'),
+            'DTSTART;VALUE=DATE:'.$startAd->format('Ymd'),
+            'DTEND;VALUE=DATE:'.$endAd->format('Ymd'),
+            'SUMMARY:'.$summary,
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ])."\r\n";
+    }
+
     public function toArray(): array
     {
         return [

@@ -19,9 +19,11 @@ composer require sambat/nepali-calendar
 | illuminate/contracts & illuminate/support | ^10.0 – ^13.0 |
 | Carbon | ^2.72 and ^3.0 |
 
-The newest Laravel major (13) is tested in CI on PHP 8.4 and 8.5; older majors are
-covered on the PHP lines they support. No code changes are needed when upgrading
-between supported Laravel versions.
+CI verifies **Laravel 11 – 13 on PHP 8.2 – 8.5** (newest Laravel on the newest PHP
+lines). PHP 8.1 and Laravel 10 remain supported in `composer.json` — the code is
+8.1-clean — but they are EOL and their dependency toolchains are blocked by security
+advisories, so they are no longer exercised in CI. No code changes are needed when
+upgrading between supported Laravel versions.
 
 ## Publish config (Laravel only, optional)
 

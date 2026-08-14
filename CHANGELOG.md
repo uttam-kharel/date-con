@@ -19,8 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DB_CONNECTION=sqlite` + `DB_DATABASE=:memory:` so the suite is environment-agnostic.
 - **CI install step fixed** — the Laravel matrix is pinned via
   `composer require --no-update` (a plain `composer update` then resolves), because
-  `composer update pkg:constraint` is not allowed without a lock file. The
-  Laravel 10 – 13 matrix now actually runs on every push.
+  `composer update pkg:constraint` is not allowed without a lock file.
+- **CI matrix corrected to what is actually exercisable in 2026** — Laravel 11 – 13 on
+  PHP 8.2 – 8.5. PHP 8.1 and Laravel 10 stay supported in `composer.json`, but they are
+  EOL and their dependency toolchains are blocked by security advisories (Laravel 10
+  stable releases, and pest ≤ 2.36.0 against the newer phpunit security releases), so
+  no pest-based stack resolves for them on a modern runner.
 
 Verified against **Laravel 10 (testbench 8), 12 (testbench 10) and 13 (testbench 11)** —
 **151 tests / 2,713 assertions**.

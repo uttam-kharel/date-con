@@ -550,8 +550,10 @@ composer pint        # Laravel code style
 ```
 
 Supported PHP versions (**8.1 – 8.5**) and Laravel versions (**10 – 13**, including the
-current release line) are verified in CI on every push — see
-[`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+current release line). CI verifies **PHP 8.2 – 8.5 against Laravel 11 – 13** on every push
+(PHP 8.1 and Laravel 10 remain installable in composer.json, but they are EOL and their
+dependency toolchains are blocked by security advisories, so they are no longer
+exercisable in CI) — see [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
 ## Contributing
 

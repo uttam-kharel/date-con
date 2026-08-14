@@ -7,7 +7,7 @@ layered on top rather than required.
 It was written after a detailed study of the two existing Nepali date packages
 (`hmis/nepali-date` and `mr.incognito/date-converter`) and fixes every gap found in them:
 no mandatory database, O(1) conversions, typed value objects, real validation, formatting,
-arithmetic, localization, and 167 tests with 2,700+ assertions.
+arithmetic, localization, and 176 tests with 2,800+ assertions.
 
 ## Feature inventory
 
@@ -22,6 +22,7 @@ arithmetic, localization, and 167 tests with 2,700+ assertions.
 | **Periods** | `startOf*`/`endOf*`, calendar grids, first/last of month, `with*` copies |
 | **Diffs** | Days/months/years/weeks/hours/minutes/seconds, `diffForHumans()`, `age()`, broken-down year/month/day diffs |
 | **Culture** | Nepali seasons (ऋतु) and rashis (zodiac), birthdays, age at a given date |
+| **Numbers** | `NepaliNumber` — Devanagari digits, Indian (lakh/crore) grouping, number-to-words in Nepali and English |
 | **Ranges** | `NepaliDateRange`: iteration, slicing, overlap/merge/intersection/gap, export |
 | **Fiscal year** | Shrawan-based `NepaliFiscalYear` (`2083/84`), quarters, quarter ranges |
 | **Business days** | Configurable weekends + holidays, `addBusinessDays()`, counting on ranges |

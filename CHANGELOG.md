@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `RELEASING.md` is now the complete release handbook (rules, checklist, CI matrix,
   tag history, backfill, rollback, dataset governance).
 
+## [1.12.0] - 2026-08-14
+
+### Added
+
+- **`NepaliNumber`** — the public numeral engine: `toNepali()` / `toEnglish()`
+  digit conversion, `format()` with Indian (lakh/crore) grouping
+  (`१,२५,०००`), and **number-to-words** in English (`one lakh twenty-five
+  thousand`) and Nepali (`एक लाख पच्चीस हजार`) for invoices, receipts and
+  cheques. Supports 0 – 99,99,99,999 with the full irregular Nepali compound
+  table (21–99), negatives and the `nepali_number_words()` helper.
+- 9 new tests (**176 tests, 2,818 assertions** in total).
+
 ## [1.11.0] - 2026-08-14
 
 ### Added

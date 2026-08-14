@@ -57,10 +57,15 @@ jobs:
           tools: composer:v2
 
       - name: Install dependencies
+        # Pin the Laravel major for this job by editing composer.json (the
+        # repository is lockfile-less, so `composer update pkg:constraint` is
+        # not allowed — a plain `composer update` resolves the pins).
         run: |
-          composer update \
+          composer require \
             laravel/framework:${{ matrix.laravel }} \
             orchestra/testbench:${{ matrix.testbench }} \
+            --dev --no-update --no-interaction --no-progress
+          composer update \
             ${{ matrix.dependencies == 'lowest' && '--prefer-lowest' || '' }} \
             --prefer-dist --no-interaction --no-progress
 

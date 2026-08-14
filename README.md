@@ -2,8 +2,10 @@
 
 [![PHP](https://img.shields.io/badge/PHP-8.1%20%E2%80%93%208.5-777BB4?logo=php&logoColor=white)](https://www.php.net/)
 [![Laravel](https://img.shields.io/badge/Laravel-10%20%E2%80%93%2013-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![Version](https://img.shields.io/github/v/tag/uttam-kharel/date-con?label=version&color=6C5CE7)](https://github.com/uttam-kharel/date-con/tags)
+[![Tests](https://img.shields.io/github/actions/workflow/status/uttam-kharel/date-con/tests.yml?branch=main&label=tests)](https://github.com/uttam-kharel/date-con/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
-[![Code style](https://img.shields.io/badge/code%20style-Laravel%20Pint-FF2D20)](https://laravel.com/docs/pint)
+[![Code style](https://img.shields.io/badge/code%20style-Laravel%20Pint-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/docs/pint)
 
 **The god-tier Nepali (Bikram Sambat) date & time package for Laravel and plain PHP.**
 

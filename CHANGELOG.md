@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-14
+
+### Added
+
+- **`Recurrence` engine** — fluent daily / weekly / monthly / yearly rules with
+  `every()`, weekly `on('monday', 'friday')`, `between()` / `until()` and
+  `take()`, iterable and serializable. Materialization is guarded: a rule can
+  never produce more than 10,000 occurrences, so unbounded rules fail loudly
+  instead of looping forever.
+- **Range export** — `NepaliDateRange::toCsv()` (bs_date, ad_date, Nepali and
+  English weekday columns) and `NepaliDateRange::toIcs()` (RFC 5545 VEVENT with
+  an exclusive end date) for reports, spreadsheets and calendar apps.
+- 9 new tests (**151 tests, 2,713 assertions** in total).
+
 ## [1.8.0] - 2026-08-14
 
 ### Added

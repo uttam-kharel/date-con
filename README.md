@@ -32,8 +32,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Eloquent casts, ranged validation rules & query helpers for Laravel
 - ✅ Named format presets (SHORT / MEDIUM / LONG / FULL, date & time)
 - ✅ **BS 2000–2100** — the range was extended with a verified, community-sourced year
-- ✅ Range operations (overlap/merge/gap), recurrence-ready helpers, time diffs & bilingual `formatBoth()`
-- ✅ 142 tests / 2600+ assertions, O(1) conversions
+- ✅ Range operations (overlap/merge/gap), recurrence rules, CSV/iCal export, time diffs & bilingual `formatBoth()`
+- ✅ 151 tests / 2700+ assertions, O(1) conversions
 
 ---
 
@@ -316,6 +316,31 @@ $ward->businessDays();               // list<NepaliDate> skipping weekends+holid
 $ward->businessDayCount();           // int
 $ward->weekends(); $ward->holidays();
 $ward->daysEvery(7);                 // every 7th day
+
+$ward->toCsv();                      // bs_date,ad_date,weekday_nepali,weekday_english
+$ward->toIcs('Ward schedule');       // RFC 5545 iCalendar VEVENT
+```
+
+### Recurrence (billing, schedules, reports)
+
+```php
+use Sambat\NepaliCalendar\Recurrence;
+
+$billing = Recurrence::monthly('2083-01-05')
+    ->every(2)                    // every second month
+    ->until('2083-12-31')
+    ->dates();                    // list<NepaliDate>
+
+$meetings = Recurrence::weekly('2083-01-01')
+    ->on('monday', 'friday')      // or on(2, 6)
+    ->between('2083-01-01', '2083-12-31');
+
+foreach (Recurrence::daily('2083-01-01')->take(10) as $date) {
+    // ...
+}
+
+// Rules are guarded: an unbounded rule throws instead of looping forever.
+Recurrence::daily('2083-01-01')->dates(); // InvalidNepaliDateException (> 10,000)
 ```
 
 ### Business days & holidays
@@ -498,7 +523,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 142 tests, 2600+ assertions
+composer test        # 151 tests, 2700+ assertions
 composer pint        # Laravel code style
 ```
 

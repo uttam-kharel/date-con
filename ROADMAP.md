@@ -9,10 +9,10 @@ that must happen *between* releases.
 
 ---
 
-## 1. Where we are today (v1.7.0)
+## 1. Where we are today (v1.9.0)
 
 Development started in **December 2020**, right after PHP 8.0's release (Nov 26, 2020), and
-has run continuously since — 64 commits, one feature at a time, from the first scaffold to
+has run continuously since — 75 commits, one feature at a time, from the first scaffold to
 this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.0`
 (formatting engine) and `v0.9.0` (Laravel integration).
 
@@ -29,8 +29,10 @@ this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.
 | **v1.5.0** | ^8.1 | Ranged validation (`nepali_date_before/after/between` + rule classes), `NepaliDateCast` / `NepaliDateTimeCast` (canonical AD storage, BS presentation), query macros (`whereNepaliDate/Year/Month/Day/Between`, `orderByNepaliDate`) — 126 tests | ✅ tagged |
 | **v1.6.0** | ^8.1 | `DateFormat` presets (`SHORT/MEDIUM/LONG/FULL`, datetime & time variants) via `formatPreset()` — 128 tests | ✅ tagged |
 | **v1.7.0** | ^8.1 | **Dataset extended to BS 2100** (community-verified, anchored at 2100-01-01 = 2043-04-14), dynamic range labels in out-of-range exceptions, GitHub release workflow + `RELEASING.md` — 133 tests | ✅ tagged |
+| **v1.8.0** | ^8.1 | Range operations (`containsRange`/`overlaps`/`touches`/`merge`/`intersection`/`gap`, `daysEvery`), business-day counting on ranges, day helpers (`tomorrow`/`yesterday`/weekdays), time diffs, bilingual `formatBoth()` — 142 tests | ✅ tagged |
+| **v1.9.0** | ^8.1 | **`Recurrence` engine** (daily/weekly/monthly/yearly, `every`/`on`/`between`/`until`/`take`, 10k guardrail), CSV + iCalendar export for ranges — 151 tests | ✅ tagged |
 
-Current baseline: **64 commits, 11 annotated tags, 133 tests / 2,633 assertions,
+Current baseline: **75 commits, 13 annotated tags, 151 tests / 2,713 assertions,
 Pint clean, `composer validate --strict` green, every tag verified standalone.**
 
 The conversion range is **BS 2000–2100 / AD 1943–2044**. The dataset — and its
@@ -99,9 +101,9 @@ EOL. PHP 8.6 (beta as of late 2026) becomes a CI target when 2.x+ lands.
 
 | Version | 🎯 Features | Effort |
 |---|---|---|
-| **v1.8.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
-| **v1.9.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
-| **v1.10.0** | **Export** — `toArray()/toJson()` already exist; add CSV and iCalendar (`.ics`) export for calendars and ranges | S |
+| **v1.10.0** | **Livewire pickers** — `NepaliDatePicker`, `NepaliMonthPicker`, `NepaliYearPicker` as a separate `nepali-calendar-livewire` package | L |
+| **v1.11.0** | **Filament pickers** — `NepaliDatePicker` etc. as a separate `nepali-calendar-filament` package | L |
+| **v1.12.0** | **Recurrence + export polish** — weekly `on()` already shipped; add holiday-aware recurrence (`skipWeekends()`, `skipHolidays()`) and ics/calendar export for `Recurrence` | S |
 
 ### 4.3 Planned — 2.x · architecture release (PHP 8.2+, breaking changes land here, not randomly in 1.x)
 
@@ -219,9 +221,9 @@ every tag.
 
 | When | Milestones |
 |---|---|
-| 2026 Q3–Q4 | ✅ v1.3.0 (fiscal year, quarters, ranges) · ✅ v1.4.0 (holidays, business days) · ✅ v1.5.0 (casts, validation, query helpers) · ✅ v1.6.0 (format presets) · ✅ v1.7.0 (dataset to BS 2100, release workflow) |
-| 2027 H1 | v1.8.0 (Livewire pickers) · v1.9.0 (Filament pickers) |
-| 2027 H2 | v1.10.0 (export) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
+| 2026 Q3–Q4 | ✅ v1.3.0 (fiscal year, quarters, ranges) · ✅ v1.4.0 (holidays, business days) · ✅ v1.5.0 (casts, validation, query helpers) · ✅ v1.6.0 (format presets) · ✅ v1.7.0 (dataset to BS 2100, release workflow) · ✅ v1.8.0 (range ops, day helpers) · ✅ v1.9.0 (recurrence, export) |
+| 2027 H1 | v1.10.0 (Livewire pickers) · v1.11.0 (Filament pickers) |
+| 2027 H2 | v1.12.0 (recurrence polish) · **v2.0.0** (PHP 8.2+, JSON dataset, contracts) |
 | 2028 | v2.1–v2.6 (formatting, locales, holidays, performance, recurrence, query API) |
 | 2028–2029 | v3.0 ecosystem split · CLI · API · docs site · holidays package |
 | 2029+ | v4.0 — modern PHP floor |

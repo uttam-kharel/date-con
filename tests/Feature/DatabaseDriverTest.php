@@ -27,7 +27,7 @@ afterEach(function () {
 
 it('resolves the database provider from the config driver', function () {
     expect(Calendar::provider())->toBeInstanceOf(DatabaseCalendarDataProvider::class);
-    expect(Calendar::supportedYears())->toBe(['min' => 2000, 'max' => 2099]);
+    expect(Calendar::supportedYears())->toBe(['min' => 2000, 'max' => 2100]);
 });
 
 it('converts dates from the database exactly like the built-in data', function () {
@@ -55,10 +55,10 @@ it('seeds through the artisan command and guards against double seeding', functi
     $this->artisan('nepali:seed')->assertFailed();
 
     $this->artisan('nepali:seed', ['--fresh' => true])
-        ->expectsOutputToContain('Seeded 100 BS years')
+        ->expectsOutputToContain('Seeded 101 BS years')
         ->assertSuccessful();
 
-    expect(DB::table('nepali_calendar_years')->count())->toBe(100);
+    expect(DB::table('nepali_calendar_years')->count())->toBe(101);
 });
 
 it('fails with a helpful message when the table is empty', function () {

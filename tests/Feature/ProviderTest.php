@@ -25,7 +25,7 @@ it('exposes month and weekday name lists', function () {
     expect(NepaliDate::monthNames('roman')[11])->toBe('Falgun');
     expect(NepaliDate::monthNames('english')[11])->toBe('November');
     expect(NepaliDate::weekDayNames()[2])->toBe('सोमबार');
-    expect(NepaliDate::range()['bs'])->toBe(['min' => '2000-01-01', 'max' => '2099-12-30']);
+    expect(NepaliDate::range()['bs'])->toBe(['min' => '2000-01-01', 'max' => '2100-12-30']);
 });
 
 it('supports the nepali_date validation rule', function () {

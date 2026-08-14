@@ -76,7 +76,7 @@ it('clamps month arithmetic to the target month length', function () {
 });
 
 it('throws when arithmetic leaves the supported range', function () {
-    expect(fn () => NepaliDate::parse('2099-12-30')->addDays(1))->toThrow(NepaliDateOutOfRangeException::class);
+    expect(fn () => NepaliDate::parse('2100-12-30')->addDays(1))->toThrow(NepaliDateOutOfRangeException::class);
     expect(fn () => NepaliDate::parse('2000-01-01')->subDays(1))->toThrow(NepaliDateOutOfRangeException::class);
 });
 

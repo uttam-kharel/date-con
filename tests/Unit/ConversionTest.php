@@ -20,6 +20,8 @@ it('converts known AD dates to BS', function (string $ad, string $bs) {
     ['2025-03-12', '2081-11-28'],
     ['2025-06-30', '2082-03-16'],
     ['2043-04-13', '2099-12-30'],
+    ['2043-04-14', '2100-01-01'],
+    ['2044-04-12', '2100-12-30'],
 ]);
 
 it('converts known BS dates to AD', function (string $bs, string $ad) {
@@ -36,6 +38,8 @@ it('converts known BS dates to AD', function (string $bs, string $ad) {
     ['2081-11-28', '2025-03-12'],
     ['2082-03-16', '2025-06-30'],
     ['2099-12-30', '2043-04-13'],
+    ['2100-01-01', '2043-04-14'],
+    ['2100-12-30', '2044-04-12'],
 ]);
 
 it('round-trips every sampled BS day through the AD calendar', function () {
@@ -72,9 +76,9 @@ it('returns the correct day counts and leap years', function () {
 
 it('rejects dates outside the supported range', function () {
     expect(fn () => NepaliDate::fromAd('1943-04-13'))->toThrow(NepaliDateOutOfRangeException::class);
-    expect(fn () => NepaliDate::fromAd('2043-04-14'))->toThrow(NepaliDateOutOfRangeException::class);
+    expect(fn () => NepaliDate::fromAd('2044-04-13'))->toThrow(NepaliDateOutOfRangeException::class);
     expect(fn () => NepaliDate::parse('2099-12-31'))->toThrow(InvalidNepaliDateException::class);
-    expect(fn () => NepaliDate::parse('2100-01-01'))->toThrow(NepaliDateOutOfRangeException::class);
+    expect(fn () => NepaliDate::parse('2101-01-01'))->toThrow(NepaliDateOutOfRangeException::class);
     expect(fn () => NepaliDate::parse('1999-12-30'))->toThrow(NepaliDateOutOfRangeException::class);
 });
 
@@ -90,8 +94,16 @@ it('exposes the supported ranges', function () {
     $ad = Calendar::adRange();
 
     expect(sprintf('%04d-%02d-%02d', $ad['min']['year'], $ad['min']['month'], $ad['min']['day']))->toBe('1943-04-14');
-    expect(sprintf('%04d-%02d-%02d', $ad['max']['year'], $ad['max']['month'], $ad['max']['day']))->toBe('2043-04-13');
-    expect(Calendar::totalDays())->toBe(36525);
+    expect(sprintf('%04d-%02d-%02d', $ad['max']['year'], $ad['max']['month'], $ad['max']['day']))->toBe('2044-04-12');
+    expect(Calendar::totalDays())->toBe(36890);
+});
+
+it('keeps the extended range boundary consistent', function () {
+    // The verified 2099-12-30 = 2043-04-13 boundary rolls straight into BS 2100.
+    expect(NepaliDate::parse('2099-12-30')->addDays(1)->toDateString())->toBe('2100-01-01');
+    expect(NepaliDate::parse('2100-01-01')->ad()->format('Y-m-d'))->toBe('2043-04-14');
+    expect(NepaliDate::parse('2100-12-30')->ad()->format('Y-m-d'))->toBe('2044-04-12');
+    expect(Calendar::daysInBsYear(2100))->toBe(365);
 });
 
 it('parses timestamps and Carbon instances as AD instants', function () {

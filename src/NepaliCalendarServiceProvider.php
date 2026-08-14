@@ -20,7 +20,7 @@ use Sambat\NepaliCalendar\Query\NepaliDateQueryBuilder;
 
 class NepaliCalendarServiceProvider extends ServiceProvider
 {
-    public const VERSION = '1.10.0';
+    public const VERSION = '1.10.1';
 
     public function register(): void
     {
@@ -63,9 +63,17 @@ class NepaliCalendarServiceProvider extends ServiceProvider
             __DIR__.'/../config/nepali-calendar.php' => config_path('nepali-calendar.php'),
         ], 'nepali-calendar-config');
 
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ], 'nepali-calendar-migrations');
+        // publishesMigrations() only exists on Laravel 11+; fall back to the
+        // classic publishes() call so the package boots on Laravel 10 as well.
+        if (method_exists($this, 'publishesMigrations')) {
+            $this->publishesMigrations([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'nepali-calendar-migrations');
+        } else {
+            $this->publishes([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'nepali-calendar-migrations');
+        }
 
         $this->registerBladeDirectives();
         $this->registerValidationRules();

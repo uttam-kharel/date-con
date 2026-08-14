@@ -60,6 +60,7 @@ The full documentation lives in [`docs/`](docs/) — one page per topic:
 | [Fiscal year & quarters](docs/07-fiscal-year.md) | Shrawan-based fiscal years, quarters, quarter ranges |
 | [Business days & holidays](docs/08-business-days.md) | weekends, holidays, business-day math, custom holiday sources |
 | [Laravel](docs/09-laravel.md) | validation, Eloquent casts, query helpers, Blade, Carbon macros, artisan, helpers |
+| [Learn to build this package](docs/11-learn-to-build-this-package.md) | PHP OOP → Composer → patterns → Laravel layer → testing → versioning → publishing, from zero, using this package's real code |
 | [API reference](docs/10-api-reference.md) | every public class, method and signature in one place |
 
 ---

@@ -1,6 +1,8 @@
 <?php
 
 use Sambat\NepaliCalendar\Calendar;
+use Sambat\NepaliCalendar\Enums\Rashi;
+use Sambat\NepaliCalendar\Enums\Season;
 use Sambat\NepaliCalendar\NepaliDate;
 use Sambat\NepaliCalendar\NepaliDateRange;
 use Sambat\NepaliCalendar\NepaliFiscalYear;
@@ -106,6 +108,26 @@ if (! function_exists('bs_age')) {
     function bs_age(mixed $birthDate): int
     {
         return NepaliDate::parse($birthDate)->age();
+    }
+}
+
+if (! function_exists('bs_season')) {
+    /**
+     * The classical Nepali season (ऋतु) of a BS date.
+     */
+    function bs_season(mixed $date = null): Season
+    {
+        return ($date === null ? NepaliDate::now() : NepaliDate::parse($date))->season();
+    }
+}
+
+if (! function_exists('bs_rashi')) {
+    /**
+     * The Nepali zodiac sign (rashi) of a BS date.
+     */
+    function bs_rashi(mixed $date = null): Rashi
+    {
+        return ($date === null ? NepaliDate::now() : NepaliDate::parse($date))->rashi();
     }
 }
 

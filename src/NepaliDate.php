@@ -11,6 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 use Sambat\NepaliCalendar\Enums\DateFormat;
+use Sambat\NepaliCalendar\Enums\Rashi;
+use Sambat\NepaliCalendar\Enums\Season;
 use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
 use Sambat\NepaliCalendar\Holidays\HolidayRepository;
 use Sambat\NepaliCalendar\Holidays\NepaliHoliday;
@@ -272,6 +274,18 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public function monthShortName(?string $language = null): string
     {
         return Formatter::monthShortNamePublic($this, $language);
+    }
+
+    /** The classical Nepali season (ऋतु) this date falls in. */
+    public function season(): Season
+    {
+        return Season::fromMonth($this->month);
+    }
+
+    /** The Nepali zodiac sign (rashi) of the BS month. */
+    public function rashi(): Rashi
+    {
+        return Rashi::fromMonth($this->month);
     }
 
     /** Day of the BS year, 1-based. */
@@ -643,10 +657,89 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
         return $absolute ? abs($diff) : $diff;
     }
 
+    /**
+     * Broken-down difference as [years, months, days].
+     *
+     * 2080-11-05 -> 2083-04-12 is [2, 5, 7]: two full years, five further
+     * months and seven further days. Uses BS-native arithmetic with the same
+     * month-end clamping as addMonths()/addYears().
+     */
+    public function diffInYearsMonthsDays(?self $other = null, bool $absolute = true): array
+    {
+        $other ??= self::now();
+
+        $forward = $this->compareTo($other) <= 0;
+        $sign = $absolute || $forward ? 1 : -1;
+        [$from, $to] = $forward ? [$this, $other] : [$other, $this];
+
+        $years = $from->diffInYears($to);
+        $months = $from->addYears($years)->diffInMonths($to);
+        $days = $from->addYears($years)->addMonths($months)->diffInDays($to);
+
+        return [$sign * $years, $sign * $months, $sign * $days];
+    }
+
+    /** Age as [years, months, days] completed by $at (default: now). */
+    public function ageInYearsMonthsDays(?self $at = null): array
+    {
+        $at ??= self::now();
+
+        return $this->isAfter($at) ? [0, 0, 0] : $this->diffInYearsMonthsDays($at, absolute: false);
+    }
+
     /** Full years from this date (a birth date) until now. */
     public function age(): int
     {
         return $this->diffInYears(self::now(), absolute: false);
+    }
+
+    /** Full years completed by $other (a future instant); 0 if not born yet. */
+    public function ageAt(mixed $other): int
+    {
+        $other = self::parse($other);
+
+        return $this->isAfter($other) ? 0 : $this->diffInYears($other, absolute: false);
+    }
+
+    /** True when $today (default: now) is this date's birthday. */
+    public function isBirthday(?self $today = null): bool
+    {
+        $today ??= self::now();
+
+        if ($this->month !== $today->month) {
+            return false;
+        }
+
+        if ($this->day === $today->day) {
+            return true;
+        }
+
+        // Born on a month-end day that does not exist this year (e.g. a
+        // 32-day Ashadh birthday in a 31-day Ashadh year): celebrate on the
+        // last day of the month.
+        $lastDay = Calendar::daysInBsMonth($today->year, $today->month);
+
+        return $this->day > $lastDay && $today->day === $lastDay;
+    }
+
+    /** The next occurrence of this date's birthday (strictly after $from). */
+    public function nextBirthday(?self $from = null): self
+    {
+        $from ??= self::now();
+
+        $candidate = function (int $year): self {
+            $day = min($this->day, Calendar::daysInBsMonth($year, $this->month));
+
+            return new self($year, $this->month, $day);
+        };
+
+        $next = $candidate($from->year);
+
+        if ($next->isBefore($from) || $next->equals($from)) {
+            $next = $candidate($from->year + 1);
+        }
+
+        return $next;
     }
 
     /**

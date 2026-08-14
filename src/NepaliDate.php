@@ -334,6 +334,21 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
         return $this->ad->format($format);
     }
 
+    /**
+     * The same instant rendered in both calendars: the BS date with Nepali
+     * names and Devanagari numerals, and the equivalent Gregorian date with
+     * English names and western numerals.
+     *
+     * @return array{nepali: string, english: string}
+     */
+    public function formatBoth(string $format = 'l, F j, Y'): array
+    {
+        return [
+            'nepali' => $this->format($format, 'nepali'),
+            'english' => $this->format($format, 'english', false),
+        ];
+    }
+
     public function toDateString(string $separator = '-'): string
     {
         return sprintf('%04d%s%02d%s%02d', $this->year, $separator, $this->month, $separator, $this->day);
@@ -432,6 +447,28 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public function previousDay(): self
     {
         return $this->subDay();
+    }
+
+    /** Tomorrow relative to this date. */
+    public function tomorrow(): self
+    {
+        return $this->addDay();
+    }
+
+    /** Yesterday relative to this date. */
+    public function yesterday(): self
+    {
+        return $this->subDay();
+    }
+
+    public function isTomorrow(): bool
+    {
+        return $this->equals(self::now()->tomorrow());
+    }
+
+    public function isYesterday(): bool
+    {
+        return $this->equals(self::now()->yesterday());
     }
 
     public function nextMonth(): self
@@ -554,6 +591,30 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
         $diff = $this->diffInDays($other, $absolute);
 
         return (int) floor($diff / 7);
+    }
+
+    /** Seconds between the two AD instants (defaults to now). */
+    public function diffInSeconds(?self $other = null, bool $absolute = true): int
+    {
+        $other ??= self::now();
+
+        $diff = $other->ad->getTimestamp() - $this->ad->getTimestamp();
+
+        return $absolute ? abs($diff) : $diff;
+    }
+
+    public function diffInMinutes(?self $other = null, bool $absolute = true): int
+    {
+        $diff = $this->diffInSeconds($other, false);
+
+        return $absolute ? abs(intdiv($diff, 60)) : intdiv($diff, 60);
+    }
+
+    public function diffInHours(?self $other = null, bool $absolute = true): int
+    {
+        $diff = $this->diffInSeconds($other, false);
+
+        return $absolute ? abs(intdiv($diff, 3600)) : intdiv($diff, 3600);
     }
 
     public function diffInMonths(?self $other = null, bool $absolute = true): int
@@ -759,6 +820,34 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public function isWorkingDay(): bool
     {
         return $this->isBusinessDay();
+    }
+
+    /** A weekday: not a configured weekend day (holidays do not count). */
+    public function isWeekday(): bool
+    {
+        return ! $this->isWeekend();
+    }
+
+    /** The next day that is not a weekend day. */
+    public function nextWeekday(): self
+    {
+        $date = $this;
+        do {
+            $date = $date->addDay();
+        } while ($date->isWeekend());
+
+        return $date;
+    }
+
+    /** The previous day that is not a weekend day. */
+    public function previousWeekday(): self
+    {
+        $date = $this;
+        do {
+            $date = $date->subDay();
+        } while ($date->isWeekend());
+
+        return $date;
     }
 
     public function nextBusinessDay(): self

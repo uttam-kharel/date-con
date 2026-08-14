@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-08-14
+
+### Added
+
+- **Range operations** on `NepaliDateRange` — `containsRange()`, `overlaps()`,
+  `touches()`, `merge()`, `intersection()` and `gap()` for scheduling and
+  reporting; `daysEvery($step)` for sampling; and business-day counting with
+  `businessDays()` / `workingDays()`, `businessDayCount()`, `weekends()` and
+  `holidays()`.
+- **Day-level helpers on `NepaliDate`** — `tomorrow()`, `yesterday()`,
+  `isTomorrow()`, `isYesterday()`, `isWeekday()`, `nextWeekday()`,
+  `previousWeekday()`.
+- **Time diffs** — `diffInSeconds()`, `diffInMinutes()` and `diffInHours()`
+  between the AD instants (signed or absolute).
+- **`formatBoth()`** — the same instant rendered in both calendars: Nepali
+  names with Devanagari numerals and the Gregorian date in English.
+- 9 new tests (**142 tests, 2,681 assertions** in total).
+
 ## [1.7.0] - 2026-08-14
 
 ### Added

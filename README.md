@@ -32,7 +32,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Eloquent casts, ranged validation rules & query helpers for Laravel
 - ✅ Named format presets (SHORT / MEDIUM / LONG / FULL, date & time)
 - ✅ **BS 2000–2100** — the range was extended with a verified, community-sourced year
-- ✅ 133 tests / 2600+ assertions, O(1) conversions
+- ✅ Range operations (overlap/merge/gap), recurrence-ready helpers, time diffs & bilingual `formatBoth()`
+- ✅ 142 tests / 2600+ assertions, O(1) conversions
 
 ---
 
@@ -300,6 +301,23 @@ NepaliDate::parse('2083-08-15')->startOfFiscalYear();
 NepaliDate::parse('2083-08-15')->rangeTo('2083-12-31');
 ```
 
+Ranges can be compared, combined and sliced for business reporting:
+
+```php
+$booking = NepaliDateRange::between('2083-08-10', '2083-08-15');
+$ward    = NepaliDateRange::between('2083-08-01', '2083-08-31');
+
+$booking->overlaps($ward);           // true
+$booking->merge($ward);              // 2083-08-01 .. 2083-08-31
+$booking->intersection($ward);       // 2083-08-10 .. 2083-08-15
+$ward->gap($otherRange);             // days between two ranges, or null
+$ward->containsRange($booking);      // true
+$ward->businessDays();               // list<NepaliDate> skipping weekends+holidays
+$ward->businessDayCount();           // int
+$ward->weekends(); $ward->holidays();
+$ward->daysEvery(7);                 // every 7th day
+```
+
 ### Business days & holidays
 
 Holidays come from **your** config or container — the core never hardcodes
@@ -327,12 +345,21 @@ $d->addBusinessDays(10);         // skips weekends and holidays
 $d->businessDaysUntil('2083-09-01'); // signed business-day gap
 ```
 
-### Comparison
+### Comparison, relative dates & time diffs
 
 ```php
 $d->isBefore($other); $d->isAfter($other); $d->isBetween($a, $b);
 $d->isSameDay($other); $d->equals('2081-11-05');
-$d->isToday(); $d->isPast(); $d->isFuture(); $d->isWeekend();
+$d->isToday(); $d->isPast(); $d->isFuture(); $d->isWeekend(); $d->isWeekday();
+
+$d->tomorrow(); $d->yesterday();        // relative day navigation
+$d->isTomorrow(); $d->isYesterday();
+$d->nextWeekday(); $d->previousWeekday(); // skips weekend days only
+
+$d->diffInDays($other); $d->diffInHours($other);
+$d->diffInMinutes($other); $d->diffInSeconds($other); // signed or absolute
+
+$d->formatBoth(); // ['nepali' => 'सोमबार, फागुन ५, २०८१', 'english' => 'Monday, February 17, 2025']
 ```
 
 ### Laravel validation
@@ -471,7 +498,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 133 tests, 2600+ assertions
+composer test        # 142 tests, 2600+ assertions
 composer pint        # Laravel code style
 ```
 

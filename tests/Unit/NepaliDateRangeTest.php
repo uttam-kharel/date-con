@@ -1,7 +1,13 @@
 <?php
 
+use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
+use Sambat\NepaliCalendar\Holidays\HolidayRepository;
 use Sambat\NepaliCalendar\NepaliDate;
 use Sambat\NepaliCalendar\NepaliDateRange;
+
+afterEach(function () {
+    HolidayRepository::setInstance(null);
+});
 
 it('builds inclusive ranges and normalizes reversed bounds', function () {
     $range = NepaliDateRange::between('2081-11-05', '2081-11-08');
@@ -103,4 +109,65 @@ it('builds ranges from a date with rangeTo', function () {
 
     expect($range)->toBeInstanceOf(NepaliDateRange::class);
     expect($range->count())->toBe(3);
+});
+
+it('detects containment, overlap and adjacency', function () {
+    $a = NepaliDateRange::between('2081-11-01', '2081-11-10');
+    $b = NepaliDateRange::between('2081-11-05', '2081-11-15');
+    $c = NepaliDateRange::between('2081-11-11', '2081-11-20');
+    $d = NepaliDateRange::between('2081-12-01', '2081-12-10');
+
+    expect($a->containsRange(NepaliDateRange::between('2081-11-03', '2081-11-08')))->toBeTrue();
+    expect($a->containsRange($b))->toBeFalse();
+    expect($a->overlaps($b))->toBeTrue();
+    expect($a->overlaps($d))->toBeFalse();
+    expect($a->touches($c))->toBeTrue(); // 11-10 .. 11-11 adjacent
+    expect($a->touches($b))->toBeFalse();
+    expect($a->touches($d))->toBeFalse();
+});
+
+it('merges, intersects and measures gaps between ranges', function () {
+    $a = NepaliDateRange::between('2081-11-01', '2081-11-10');
+    $b = NepaliDateRange::between('2081-11-05', '2081-11-15');
+    $c = NepaliDateRange::between('2081-11-11', '2081-11-20');
+    $d = NepaliDateRange::between('2081-12-01', '2081-12-10');
+
+    expect($a->merge($b)->toArray())->toBe(NepaliDateRange::between('2081-11-01', '2081-11-15')->toArray());
+    expect($a->merge($c)->toArray())->toBe(NepaliDateRange::between('2081-11-01', '2081-11-20')->toArray());
+    expect($a->merge($d))->toBeNull();
+
+    expect($a->intersection($b)->toDateStrings())->toBe(['2081-11-05', '2081-11-06', '2081-11-07', '2081-11-08', '2081-11-09', '2081-11-10']);
+    expect($a->intersection($d))->toBeNull();
+
+    $gap = $a->gap($d);
+    expect($gap->start()->toDateString())->toBe('2081-11-11');
+    expect($gap->end()->toDateString())->toBe('2081-11-29'); // Falgun 2081 has 29 days
+    expect($gap->count())->toBe(19);
+    expect($a->gap($c))->toBeNull(); // adjacent, no gap
+});
+
+it('samples every N-th day', function () {
+    $range = NepaliDateRange::between('2081-11-01', '2081-11-10');
+
+    expect($range->daysEvery(3))->toHaveCount(4);
+    expect(array_map(fn ($d) => $d->toDateString(), $range->daysEvery(3)))
+        ->toBe(['2081-11-01', '2081-11-04', '2081-11-07', '2081-11-10']);
+    expect(fn () => $range->daysEvery(0))->toThrow(InvalidNepaliDateException::class);
+});
+
+it('counts business days, weekends and holidays inside a range', function () {
+    HolidayRepository::setInstance(HolidayRepository::fromArray([
+        '2081-11-07' => 'Test Holiday', // Wednesday
+    ]));
+
+    // Mon 05 .. Sun 11 (Sat 10 is the weekend).
+    $range = NepaliDateRange::between('2081-11-05', '2081-11-11');
+
+    expect($range->businessDayCount())->toBe(5); // Tue, Wed holiday skipped, Thu, Fri, Sun
+    expect($range->businessDays())->toHaveCount(5);
+    expect($range->workingDays())->toHaveCount(5);
+    expect($range->weekends())->toHaveCount(1);
+    expect($range->weekends()[0]->toDateString())->toBe('2081-11-10');
+    expect($range->holidays())->toHaveCount(1);
+    expect($range->holidays()[0]->toDateString())->toBe('2081-11-07');
 });

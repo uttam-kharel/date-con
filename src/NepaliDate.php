@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
+use Sambat\NepaliCalendar\Enums\DateFormat;
 use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
 use Sambat\NepaliCalendar\Holidays\HolidayRepository;
 use Sambat\NepaliCalendar\Holidays\NepaliHoliday;
@@ -319,6 +320,12 @@ final class NepaliDate implements Arrayable, Jsonable, JsonSerializable, Stringa
     public function format(string $format, ?string $language = null, ?bool $devanagariNumerals = null): string
     {
         return Formatter::format($this, $format, $language, $devanagariNumerals);
+    }
+
+    /** Format using one of the named DateFormat presets. */
+    public function formatPreset(DateFormat $preset, ?string $language = null, ?bool $devanagariNumerals = null): string
+    {
+        return $this->format($preset->value, $language, $devanagariNumerals);
     }
 
     /** Format using the Gregorian calendar (delegates to Carbon). */

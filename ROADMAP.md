@@ -32,8 +32,9 @@ this release. Pre-1.0 milestones are tagged `v0.1.0` (conversion engine), `v0.5.
 | **v1.8.0** | ^8.1 | Range operations (`containsRange`/`overlaps`/`touches`/`merge`/`intersection`/`gap`, `daysEvery`), business-day counting on ranges, day helpers (`tomorrow`/`yesterday`/weekdays), time diffs, bilingual `formatBoth()` — 142 tests | ✅ tagged |
 | **v1.9.0** | ^8.1 | **`Recurrence` engine** (daily/weekly/monthly/yearly, `every`/`on`/`between`/`until`/`take`, 10k guardrail), CSV + iCalendar export for ranges — 151 tests | ✅ tagged |
 | **v1.10.0** | ^8.1 | **Laravel 13 support** — `illuminate` ^13.0, testbench 11 + Pest 4/5 dev ladder, CI matrix explicitly tests Laravel 11–13 on PHP 8.2–8.5 (newest on PHP 8.4/8.5; PHP 8.1/Laravel 10 stay installable but their EOL toolchains are security-blocked) — 151 tests | ✅ tagged |
+| **v1.11.0** | ^8.1 | **Nepali culture & age** — `Season` (ऋतु) and `Rashi` (zodiac) enums, `season()` / `rashi()`, `ageAt()`, `isBirthday()`, `nextBirthday()`, `diffInYearsMonthsDays()`, `InvalidNepaliMonthException`, `bs_season()` / `bs_rashi()` helpers — 167 tests | ✅ tagged |
 
-Current baseline: **82 commits, 15 annotated tags, 151 tests / 2,713 assertions,
+Current baseline: **93 commits, 16 annotated tags, 167 tests / 2,772 assertions,
 Pint clean, `composer validate --strict` green, every tag verified standalone.**
 
 The conversion range is **BS 2000–2100 / AD 1943–2044**. The dataset — and its

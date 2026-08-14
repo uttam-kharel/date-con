@@ -13,6 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `VERSION` constant and the CHANGELOG entry before a release is created; the
   `tests` workflow now also runs the full Laravel matrix against every `v*` tag push;
   the `release` workflow gained a manual `workflow_dispatch` trigger.
+  `RELEASING.md` is now the complete release handbook (rules, checklist, CI matrix,
+  tag history, backfill, rollback, dataset governance).
+
+## [1.11.0] - 2026-08-14
+
+### Added
+
+- **Nepali culture** — `NepaliDate::season()` (`Season` enum, six ऋतु with
+  Devanagari / Roman / English names) and `NepaliDate::rashi()` (`Rashi` enum,
+  twelve zodiac signs by BS month), plus `bs_season()` / `bs_rashi()` helpers and
+  Season / Rashi rows in `nepali:info`.
+- **Age & birthdays** — `ageAt()`, `isBirthday()` (month-end days celebrated on the
+  last existing day), `nextBirthday()` (clamped, strictly after today).
+- **Broken-down diffs** — `diffInYearsMonthsDays()` and `ageInYearsMonthsDays()`
+  return `[years, months, days]` using BS-native month-end clamping.
+- `InvalidNepaliMonthException` for out-of-range month numbers.
+- 16 new tests (**167 tests, 2,772 assertions** in total).
 
 ## [1.10.1] - 2026-08-14
 

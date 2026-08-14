@@ -21,8 +21,21 @@ $d->monthName();       // फागुन
 $d->monthShortName();  // फागु
 $d->weekDayName();     // सोमबार
 $d->weekDayShort();    // सोम
+$d->season();          // Season::Shishir — Nepali season (ऋतु)
+$d->rashi();           // Rashi::Kumbha — Nepali zodiac sign
 $d->ad();              // Carbon of the same instant
 $d->timestamp();       // unix timestamp
+```
+
+`season()` / `rashi()` return enums with `devanagari()`, `roman()`, `english()` and
+`name($language)` — `$d->season()->name('english')` → `Winter`,
+`$d->rashi()->name()` → `कुम्भ`.
+
+```php
+$d->season()->name('english');   // Winter
+$d->rashi()->english();          // Aquarius
+bs_season('2083-10-15');         // Season::Shishir (helper)
+bs_rashi('2083-10-15');          // Rashi::Makar (helper)
 ```
 
 `monthName()`/`weekDayName()` accept an optional language:
@@ -93,7 +106,11 @@ $d->isToday();   $d->isTomorrow();  $d->isYesterday();
 $d->isPast();    $d->isFuture();
 $d->isWeekday(); $d->isWeekend();            // configurable — see business-days docs
 $d->isHoliday(); $d->isBusinessDay(); $d->isWorkingDay();
+$d->isBirthday();                        // today is this date's month+day
 ```
+
+A birthday born on a month-end day that does not exist this year (e.g. the 32nd of
+Ashadh in a 31-day year) is celebrated on the last day of the month.
 
 ## Relative-day navigation
 
@@ -114,20 +131,31 @@ $d->diffInMonths($other);  // full months
 $d->diffInYears($other);   // full years
 $d->diffInWeeks($other);
 $d->diffInHours($other);   $d->diffInMinutes($other);  $d->diffInSeconds($other);
+
+// Broken down into components: [years, months, days]
+$d->diffInYearsMonthsDays($other);   // e.g. [2, 5, 7]
+$d->ageInYearsMonthsDays();          // age decomposed from a birth date
 ```
 
-Diffs accept `NepaliDate`, strings, Carbon, arrays — anything `parse()` accepts. By
-default they return the **absolute** value; pass `false` as the second argument for a
-signed result.
+`$other` defaults to now and must be a `NepaliDate` (use `parse()` first, e.g.
+`$d->diffInDays(NepaliDate::parse('2082-01-01'))`). By default they return the
+**absolute** value; pass `false` as the second argument for a signed result.
 
-## Human-readable diffs
+## Human-readable diffs, age & birthdays
 
 ```php
 $d->diffForHumans();                     // '१ वर्ष अघि' (config language)
 $d->diffForHumans('english');            // '1 year ago'
 NepaliDate::parse('2000-01-01')->age();  // full years to today
+$d->ageAt('2083-04-12');                 // full years completed by that date
+$d->ageInYearsMonthsDays();              // [years, months, days] to today
+$d->nextBirthday();                      // the next occurrence of month+day
 bs_diff_for_humans('2081-11-01', '2081-11-05');  // '४ दिन पछि'
 ```
+
+`age()` / `ageAt()` return 0 for a birth date in the future. `nextBirthday()`
+clamps month-end days and returns a date strictly after today (today itself → next
+year).
 
 ## Calendar grid
 

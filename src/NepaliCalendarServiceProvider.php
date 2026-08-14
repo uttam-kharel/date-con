@@ -20,7 +20,7 @@ use Sambat\NepaliCalendar\Query\NepaliDateQueryBuilder;
 
 class NepaliCalendarServiceProvider extends ServiceProvider
 {
-    public const VERSION = '1.10.1';
+    public const VERSION = '1.11.0';
 
     public function register(): void
     {

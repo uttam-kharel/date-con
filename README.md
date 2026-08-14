@@ -35,7 +35,8 @@ echo $date->diffForHumans();                         // १ वर्ष अघ�
 - ✅ Named format presets (SHORT / MEDIUM / LONG / FULL, date & time)
 - ✅ **BS 2000–2100** — the range was extended with a verified, community-sourced year
 - ✅ Range operations (overlap/merge/gap), recurrence rules, CSV/iCal export, time diffs & bilingual `formatBoth()`
-- ✅ 151 tests / 2700+ assertions, O(1) conversions
+- ✅ **Nepali culture & age** — seasons (ऋतु), rashi (zodiac), age at a date, birthdays, broken-down year/month/day diffs
+- ✅ 167 tests / 2700+ assertions, O(1) conversions
 
 ---
 
@@ -545,7 +546,7 @@ Dates outside the range throw a typed `NepaliDateOutOfRangeException` (an
 ## Testing
 
 ```bash
-composer test        # 151 tests, 2700+ assertions
+composer test        # 167 tests, 2700+ assertions
 composer pint        # Laravel code style
 ```
 

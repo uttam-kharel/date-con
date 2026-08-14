@@ -7,7 +7,7 @@ layered on top rather than required.
 It was written after a detailed study of the two existing Nepali date packages
 (`hmis/nepali-date` and `mr.incognito/date-converter`) and fixes every gap found in them:
 no mandatory database, O(1) conversions, typed value objects, real validation, formatting,
-arithmetic, localization, and 151 tests with 2,700+ assertions.
+arithmetic, localization, and 167 tests with 2,700+ assertions.
 
 ## Feature inventory
 
@@ -20,7 +20,8 @@ arithmetic, localization, and 151 tests with 2,700+ assertions.
 | **Localization** | Nepali (Devanagari), Romanized, English names; `formatBoth()` bilingual output |
 | **Arithmetic** | `addDays`/`subMonths`/`addYears`/… with month-length clamping (all immutable) |
 | **Periods** | `startOf*`/`endOf*`, calendar grids, first/last of month, `with*` copies |
-| **Diffs** | Days/months/years/weeks/hours/minutes/seconds, `diffForHumans()`, `age()` |
+| **Diffs** | Days/months/years/weeks/hours/minutes/seconds, `diffForHumans()`, `age()`, broken-down year/month/day diffs |
+| **Culture** | Nepali seasons (ऋतु) and rashis (zodiac), birthdays, age at a given date |
 | **Ranges** | `NepaliDateRange`: iteration, slicing, overlap/merge/intersection/gap, export |
 | **Fiscal year** | Shrawan-based `NepaliFiscalYear` (`2083/84`), quarters, quarter ranges |
 | **Business days** | Configurable weekends + holidays, `addBusinessDays()`, counting on ranges |
@@ -45,7 +46,7 @@ src/
 ├── Contracts/                  CalendarDataProvider contract for custom data sources
 ├── Casts/                      Eloquent casts (NepaliDateCast, NepaliDateTimeCast)
 ├── Commands/                   artisan nepali:convert / nepali:info / nepali:seed
-├── Enums/                      DateFormat, CalendarLanguage, NepaliMonth
+├── Enums/                      DateFormat, CalendarLanguage, NepaliMonth, Season, Rashi
 ├── Exceptions/                 InvalidNepaliDateException, NepaliDateOutOfRangeException
 ├── Facades/                    NepaliDate facade
 ├── Holidays/                   NepaliHoliday, HolidayCollection, HolidayRepository

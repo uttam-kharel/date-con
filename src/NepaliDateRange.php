@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use IteratorAggregate;
 use JsonSerializable;
+use Sambat\NepaliCalendar\Exceptions\InvalidNepaliDateException;
 use Stringable;
 use Traversable;
 
@@ -75,6 +76,116 @@ final class NepaliDateRange implements Arrayable, Countable, IteratorAggregate, 
         $date = NepaliDate::parse($date);
 
         return ! $date->isBefore($this->start) && ! $date->isAfter($this->end);
+    }
+
+    /** Whether another range is fully inside this one. */
+    public function containsRange(self $other): bool
+    {
+        return $this->contains($other->start) && $this->contains($other->end);
+    }
+
+    /** Whether two ranges share at least one day. */
+    public function overlaps(self $other): bool
+    {
+        return ! $this->end->isBefore($other->start) && ! $other->end->isBefore($this->start);
+    }
+
+    /** Whether the ranges are adjacent (one ends the day before the other starts). */
+    public function touches(self $other): bool
+    {
+        return $this->end->addDay()->equals($other->start)
+            || $other->end->addDay()->equals($this->start);
+    }
+
+    /**
+     * The merged range when the ranges overlap or touch, null otherwise.
+     */
+    public function merge(self $other): ?self
+    {
+        if (! $this->overlaps($other) && ! $this->touches($other)) {
+            return null;
+        }
+
+        return self::fromDates(
+            $this->start->isBefore($other->start) ? $this->start : $other->start,
+            $this->end->isAfter($other->end) ? $this->end : $other->end
+        );
+    }
+
+    /**
+     * The days shared by both ranges, or null when they do not overlap.
+     */
+    public function intersection(self $other): ?self
+    {
+        if (! $this->overlaps($other)) {
+            return null;
+        }
+
+        return self::fromDates(
+            $this->start->isAfter($other->start) ? $this->start : $other->start,
+            $this->end->isBefore($other->end) ? $this->end : $other->end
+        );
+    }
+
+    /**
+     * The days between two non-adjacent ranges, or null when they overlap
+     * or touch.
+     */
+    public function gap(self $other): ?self
+    {
+        if ($this->overlaps($other) || $this->touches($other)) {
+            return null;
+        }
+
+        $earlier = $this->end->isBefore($other->start) ? $this : $other;
+        $later = $earlier === $this ? $other : $this;
+
+        return self::fromDates($earlier->end->addDay(), $later->start->subDay());
+    }
+
+    /** Every N-th day within the range, starting at the range start. */
+    public function daysEvery(int $step): array
+    {
+        if ($step < 1) {
+            throw new InvalidNepaliDateException("Invalid step [{$step}]. Step must be at least 1.");
+        }
+
+        $days = [];
+        for ($cursor = $this->start; ! $cursor->isAfter($this->end); $cursor = $cursor->addDays($step)) {
+            $days[] = $cursor;
+        }
+
+        return $days;
+    }
+
+    /** @return list<NepaliDate> business days (not weekend, not holiday) in the range */
+    public function businessDays(): array
+    {
+        return array_values(array_filter($this->days(), fn (NepaliDate $date) => $date->isBusinessDay()));
+    }
+
+    /** @return list<NepaliDate> alias of businessDays() */
+    public function workingDays(): array
+    {
+        return $this->businessDays();
+    }
+
+    /** @return list<NepaliDate> weekend days in the range */
+    public function weekends(): array
+    {
+        return array_values(array_filter($this->days(), fn (NepaliDate $date) => $date->isWeekend()));
+    }
+
+    /** @return list<NepaliDate> configured holidays in the range */
+    public function holidays(): array
+    {
+        return array_values(array_filter($this->days(), fn (NepaliDate $date) => $date->isHoliday()));
+    }
+
+    /** Number of business days in the range. */
+    public function businessDayCount(): int
+    {
+        return count($this->businessDays());
     }
 
     /** @return list<NepaliDate> every day in the range, ascending */

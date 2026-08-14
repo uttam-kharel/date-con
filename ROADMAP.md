@@ -20,7 +20,7 @@ that must happen *between* releases.
 | **v1.4.0** | ^8.1 | `NepaliHoliday` / `HolidayCollection` / config-driven `HolidayRepository` (never hardcoded), `isBusinessDay()`, `addBusinessDays()`, signed `businessDaysUntil()`, configurable `weekend` — 114 tests | ✅ tagged |
 | **v1.5.0** | ^8.1 | Ranged validation (`nepali_date_before/after/between` + rule classes), `NepaliDateCast` / `NepaliDateTimeCast` (canonical AD storage, BS presentation), query macros (`whereNepaliDate/Year/Month/Day/Between`, `orderByNepaliDate`) — 126 tests | ✅ tagged |
 
-Current baseline: **42 commits, 6 annotated tags, 126 tests / 2,593 assertions,
+Current baseline: **50 commits, 6 annotated tags, 126 tests / 2,593 assertions,
 Pint clean, `composer validate --strict` green, every tag verified standalone.**
 
 The conversion range is **BS 2000–2099 / AD 1943–2043**, bounded by the

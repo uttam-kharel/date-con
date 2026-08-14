@@ -27,12 +27,19 @@ and take an optional format argument: `ad_to_bs('2025-02-17', 'l, F j, Y')`.
 
 ```php
 NepaliDate::parse('2081-11-28');          // YYYY-MM-DD
-NepaliDate::parse('2081/11/28');          // any separator
+NepaliDate::parse('2081/11/28');          // separators are flexible: -
+NepaliDate::parse('2081.11.28');          //   /  .  and space all work
+NepaliDate::parse('2081 11 28');          //   (and can even be mixed)
 NepaliDate::parse('20811128');            // compact
 NepaliDate::parse('२०८१-११-२८');          // Devanagari digits
 NepaliDate::parse('2081 Falgun 28');      // romanized month name
 NepaliDate::parse('2081-फागुन-28');        // Devanagari month name
 NepaliDate::parse('2081-11-28 14:30:45'); // with time (kept on the AD side)
+
+// The same flexibility applies on the AD side:
+NepaliDate::fromAd('2026/01/01');         // = NepaliDate::fromAd('2026-01-01')
+
+// Note: parse() treats input as Bikram Sambat, fromAd() as Gregorian.
 NepaliDate::parse(['year' => 2081, 'month' => 11, 'day' => 28]);
 NepaliDate::parse([2081, 11, 28]);
 ```
